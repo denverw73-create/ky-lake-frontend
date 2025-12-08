@@ -460,38 +460,67 @@ let lakeChart = new Chart(document.getElementById("lakeChart"), {
     }]
   },
   options: {
+   const floodChart = new Chart(floodCtx, {
+  type: 'bar',
+  data: floodData,
+  options: {
+    indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
-    indexAxis: "y",
-    scales: {
-      x: {
-        grid: {
-          color: "#9ca3af",
-          lineWidth: 1.5,
-          drawBorder: true,
-          borderColor: "#000000"
-        },
-        ticks: {
-          color: "#000000",
-          font: { size: 12 }
-        }
-      },
-      y: {
-        grid: {
-          color: "#6b7280",
-          lineWidth: 1.8,
-          drawBorder: true,
-          borderColor: "#000000"
-        },
-        ticks: {
-          color: "#000000",
-          font: { size: 13 }
-        }
+    layout: {
+      padding: {
+        left: 24,  // give labels a bit more room
+        right: 12,
+        top: 12,
+        bottom: 12
       }
     },
     plugins: {
       legend: {
-        labels: { color: "#000000", font: { size: 12 } }
+        labels: {
+          color: '#E8F0FF',      // bright legend text
+          font: {
+            size: 12,
+            weight: '600'
+          }
+        }
+      },
+      tooltip: {
+        titleColor: '#0B1020',
+        bodyColor: '#0B1020',
+        backgroundColor: '#E8F0FF',
+        borderColor: '#4FC3F7',
+        borderWidth: 1
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#E8F0FF',      // bright bottom numbers (-8…2)
+          font: {
+            size: 11
+          }
+        },
+        grid: {
+          color: 'rgba(232, 240, 255, 0.2)'  // brighter grid lines
+        }
+      },
+      y: {
+        ticks: {
+          color: '#FFFFFF',      // **bright lake names on the left**
+          font: {
+            size: 12,
+            weight: '600'
+          }
+        },
+        grid: {
+          color: 'rgba(232, 240, 255, 0.08)' // faint but visible
+        }
+      }
+    }
+  }
+});
+
       }
     }
   },
@@ -569,4 +598,5 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
 
