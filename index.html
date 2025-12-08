@@ -654,22 +654,20 @@
 
     // Boat mode toggle
     function setupBoatMode() {
-      const toggle = document.getElementById("boat-toggle");
-      toggle.addEventListener("change", () => {
-        document.body.classList.toggle("boat-mode", toggle.checked);
-      });
+    const boatToggle = document.getElementById("boatMode");
+
+boatToggle.addEventListener("change", () => {
+    const page = document.body;
+
+    if (boatToggle.checked) {
+        page.classList.add("boat-mode");
+    } else {
+        page.classList.remove("boat-mode");
     }
 
-    function setupZipForm() {
-      const form = document.getElementById("zip-form");
-      const input = document.getElementById("zip-input");
-
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const zip = input.value.trim();
-        if (/^\d{5}$/.test(zip)) {
-          loadWeatherByZip(zip);
-        }
+    // Force chart redraw so text colors update
+    if (window.drawFloodChart) {
+        drawFloodChart(window.lastLakeData);
       });
 
       // initial default
@@ -696,3 +694,4 @@
   </script>
 </body>
 </html>
+
