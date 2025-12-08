@@ -176,7 +176,7 @@
   <header>
     <div>
       <div class="title">KY Lake Levels</div>
-      <div class="subtitle">Live USACE levels · Louisville District</div>
+      <div class="subtitle">Live levels from your favorite KY lakes</div>
     </div>
     <div style="text-align:right;">
       <div class="badge" id="updatedBadge">Updated: loading…</div>
@@ -196,10 +196,10 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
       <div>
         <div class="subtitle" id="weatherTitle" style="font-size:1.1rem;font-weight:700;color:var(--text);">
-          Weather – Louisville, KY
+          Weather – Morehead, KY
         </div>
         <div id="weatherSubtitleSmall" class="weather-sub">
-          Default: Louisville, KY — enter ZIP to change.
+          Default: Morehead, KY — enter ZIP to change.
         </div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -251,10 +251,10 @@
 // 🔧 Replace this with your actual Render URL:
 const PROXY_URL = "https://ky-lake-backend.onrender.com/lakes";
 
-// Default weather location (Louisville)
-const DEFAULT_LAT = 38.25;
-const DEFAULT_LON = -85.76;
-const DEFAULT_LABEL = "Louisville, KY";
+// Default weather location (Morehead)
+const DEFAULT_LAT = 38.17;
+const DEFAULT_LON = -83.43;
+const DEFAULT_LABEL = "Morehead, KY";
 
 let lakes = [];
 
@@ -317,7 +317,7 @@ async function searchZipWeather(){
   const zip = (zipInput.value || "").trim();
   if (!zip){
     document.getElementById("weatherSubtitleSmall").textContent =
-      "Default: Louisville, KY — enter ZIP to change.";
+      "Default: Morehead, KY — enter ZIP to change.";
     loadWeatherFor(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LABEL);
     return;
   }
@@ -569,3 +569,4 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
