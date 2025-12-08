@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3651423030244109"
-     crossorigin="anonymous"></script>
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3651423030244109"
+          crossorigin="anonymous"></script>
 
   <title>KY Lake Levels</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -34,28 +35,13 @@
 
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
       justify-content: center;
     }
-.disclaimer-footer {
-    width: 100%;
-    text-align: center;
-    margin-top: 40px;
-    padding: 20px 10px;
-    font-size: 0.8rem;
-    opacity: 0.6;
-    color: #ccc;
-}
-
-.boat-mode .disclaimer-footer {
-    color: #000;   /* darker text for bright mode */
-    opacity: 0.7;
-}
 
     /* Boat (sun) mode */
     body.boat-mode {
@@ -330,6 +316,74 @@
         height: 360px;
       }
     }
+
+    /* ===== Disclaimer footer ===== */
+    footer.disclaimer-footer {
+      width: 100%;
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px 10px 30px;
+      font-size: 0.8rem;
+      opacity: 0.65;
+      color: #cccccc;
+    }
+
+    .boat-mode footer.disclaimer-footer {
+      color: #020617;
+      opacity: 0.8;
+    }
+
+    /* ===== Disclaimer popup ===== */
+    #disclaimerPopup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      z-index: 9999;
+    }
+
+    #disclaimerPopup.show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    #disclaimerPopup .popup-box {
+      background: #1f2937;
+      padding: 24px 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
+      color: #f9fafb;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      font-size: 0.9rem;
+    }
+
+    #disclaimerPopup .popup-box h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    #disclaimerPopup .popup-box button {
+      margin-top: 16px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      background: #3b82f6;
+      color: #ffffff;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .boat-mode #disclaimerPopup .popup-box {
+      background: #e5f3ff;
+      color: #020617;
+    }
   </style>
 </head>
 
@@ -353,24 +407,25 @@
       </div>
     </header>
 
-    <div class="top-row"><!-- Ad Card -->
-<section class="card card-soft" style="margin-bottom: 10px; padding: 6px 10px;">
-  <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">
-    Sponsored
-  </div>
-  <div style="width: 100%; min-height: 60px; display: flex; justify-content: center; align-items: center;">
-    <!-- Google AdSense ad slot -->
-    <ins class="adsbygoogle"
-         style="display:block;width:100%;"
-         data-ad-client="ca-pub-3651423030244109"
-         data-ad-slot="YYYYYYYYYY"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-  </div>
-</section>
+    <div class="top-row">
+      <!-- Ad Card -->
+      <section class="card card-soft" style="margin-bottom: 10px; padding: 6px 10px;">
+        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">
+          Sponsored
+        </div>
+        <div style="width: 100%; min-height: 60px; display: flex; justify-content: center; align-items: center;">
+          <!-- Google AdSense ad slot -->
+          <ins class="adsbygoogle"
+               style="display:block;width:100%;"
+               data-ad-client="ca-pub-3651423030244109"
+               data-ad-slot="YYYYYYYYYY"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+        </div>
+      </section>
 
       <!-- Weather Card -->
       <section class="card card-soft" style="flex: 1 1 260px">
@@ -439,6 +494,27 @@
         </section>
       </section>
     </main>
+  </div>
+
+  <!-- Bottom disclaimer -->
+  <footer class="disclaimer-footer">
+    <p>
+      <strong>Disclaimer:</strong>
+      This application is not affiliated with, endorsed by, or sponsored by the U.S. Army Corps of Engineers.
+      All lake data is publicly available from the USACE Water Management website. Accuracy is not guaranteed.
+    </p>
+  </footer>
+
+  <!-- One-time disclaimer popup -->
+  <div id="disclaimerPopup">
+    <div class="popup-box">
+      <h3>Disclaimer</h3>
+      <p>
+        This app is NOT affiliated with, endorsed by, or sponsored by the U.S. Army Corps of Engineers.
+        Data is sourced from publicly available USACE systems. Accuracy is not guaranteed.
+      </p>
+      <button id="closePopup">I Understand</button>
+    </div>
   </div>
 
   <script>
@@ -511,9 +587,7 @@
           tbody.appendChild(tr);
         }
 
-        const ts = data.timestamp
-          ? new Date(data.timestamp)
-          : new Date();
+        const ts = data.timestamp ? new Date(data.timestamp) : new Date();
         updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
         statusLine.textContent = `Loaded ${lakes.length} lakes`;
         statusLine.classList.remove("error");
@@ -523,8 +597,7 @@
       } catch (err) {
         console.error(err);
         updatedLabel.textContent = "Updated: error";
-        statusLine.textContent =
-          "Could not reach backend — is it running?";
+        statusLine.textContent = "Could not reach backend — is it running?";
         statusLine.classList.remove("ok");
         statusLine.classList.add("error");
       }
@@ -566,9 +639,7 @@
             {
               label: "% Utilized",
               data: values,
-              backgroundColor: isBoat
-                ? "#0284c7"
-                : "#3b82f6",
+              backgroundColor: isBoat ? "#0284c7" : "#3b82f6",
               borderRadius: 4,
               barThickness: 14,
             },
@@ -640,9 +711,7 @@
       const mainEl = document.getElementById("weather-main");
 
       try {
-        const geoResp = await fetch(
-          `https://api.zippopotam.us/us/${zip}`
-        );
+        const geoResp = await fetch(`https://api.zippopotam.us/us/${zip}`);
         if (!geoResp.ok) throw new Error("ZIP lookup failed");
 
         const geo = await geoResp.json();
@@ -668,37 +737,24 @@
         const nowT = temps[nowIndex] ?? null;
         const nowW = winds[nowIndex] ?? null;
 
-        const high = temps.length
-          ? Math.max(...temps)
-          : null;
-        const low = temps.length
-          ? Math.min(...temps)
-          : null;
-        const rain24 =
-          precip.length &&
-          precip.reduce((a, b) => a + b, 0).toFixed(2);
+        const high = temps.length ? Math.max(...temps) : null;
+        const low = temps.length ? Math.min(...temps) : null;
+        const rain24 = precip.length && precip.reduce((a, b) => a + b, 0).toFixed(2);
 
         mainEl.innerHTML = `
-          <div>Now: ${
-          nowT != null ? `${nowT.toFixed(0)}°F` : "—"
-        }, Wind: ${
+          <div>Now: ${nowT != null ? `${nowT.toFixed(0)}°F` : "—"}, Wind: ${
           nowW != null ? `${nowW.toFixed(0)} mph` : "—"
         }</div>
-          <div>High: ${
-          high != null ? `${high.toFixed(0)}°F` : "—"
-        }, Low: ${
+          <div>High: ${high != null ? `${high.toFixed(0)}°F` : "—"}, Low: ${
           low != null ? `${low.toFixed(0)}°F` : "—"
-        }, Rain (24h): ${
-          rain24 != null ? `${rain24}"` : "—"
-        }</div>
+        }, Rain (24h): ${rain24 != null ? `${rain24}"` : "—"}</div>
         `;
       } catch (err) {
         console.error(err);
         titleEl.textContent = "Weather – Unknown";
-        metaEl.textContent =
-          "Could not load weather for that ZIP.";
+        metaEl.textContent = "Could not load weather for that ZIP.";
         mainEl.innerHTML =
-          "<div>Now: —°F, Wind: — mph</div><div>High: —°F, Low: —°F, Rain (24h): —\"</div>";
+          '<div>Now: —°F, Wind: — mph</div><div>High: —°F, Low: —°F, Rain (24h): —"</div>';
       }
     }
 
@@ -731,6 +787,29 @@
       loadWeatherByZip(input.value.trim() || "40351");
     }
 
+    // One-time disclaimer popup
+    function setupDisclaimerPopup() {
+      const popup = document.getElementById("disclaimerPopup");
+      const btn = document.getElementById("closePopup");
+      if (!popup || !btn) return;
+
+      try {
+        if (!localStorage.getItem("acceptedDisclaimer")) {
+          popup.classList.add("show");
+        }
+      } catch (e) {
+        // if storage fails, just show popup
+        popup.classList.add("show");
+      }
+
+      btn.addEventListener("click", () => {
+        try {
+          localStorage.setItem("acceptedDisclaimer", "yes");
+        } catch (e) {}
+        popup.classList.remove("show");
+      });
+    }
+
     // Service worker registration (PWA)
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
@@ -747,31 +826,8 @@
       setupBoatMode();
       setupZipForm();
       loadLakes();
+      setupDisclaimerPopup();
     });
   </script>
-
-<style>
-.disclaimer-footer {
-    text-align: center;
-    font-size: 0.75rem;
-    opacity: 0.7;
-    padding: 10px 20px;
-    margin-top: 30px;
-    color: #ccc;
-}
-</style>
-<footer class="disclaimer-footer">
-    <p>
-        <strong>Disclaimer:</strong> This application is not affiliated with, endorsed by, or sponsored by 
-        the U.S. Army Corps of Engineers. All lake data is publicly available from the USACE Water Management website. 
-        Accuracy is not guaranteed.
-    </p>
-</footer>
-
 </body>
 </html>
-
-
-
-
-
