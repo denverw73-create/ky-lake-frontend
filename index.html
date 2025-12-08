@@ -1,345 +1,777 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KY Lake Levels</title>
+  <meta charset="UTF-8" />
+  
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3651423030244109"
+     crossorigin="anonymous"></script>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #0d1117;
-            color: white;
-        }
+  <title>KY Lake Levels</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-        .container {
-            width: 95%;
-            max-width: 1400px;
-            margin: auto;
-            padding-top: 20px;
-        }
+  <!-- PWA bits -->
+  <meta name="theme-color" content="#021326" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" href="/icons/ky-lake-192.png" />
 
-        h1 {
-            text-align: left;
-            margin-bottom: 5px;
-        }
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        #updateStatus {
-            float: right;
-            background: #111827;
-            padding: 8px 14px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
+  <style>
+    :root {
+      --bg-main: #020715;
+      --bg-card: #101827;
+      --bg-card-soft: #111827;
+      --border-subtle: #1f2937;
+      --text-main: #e5edff;
+      --text-muted: #9ca3af;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.15);
+      --danger: #f97373;
+      --success: #4ade80;
+      --chip-bg: #111827;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+.disclaimer-footer {
+    width: 100%;
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px 10px;
+    font-size: 0.8rem;
+    opacity: 0.6;
+    color: #ccc;
+}
 
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
+.boat-mode .disclaimer-footer {
+    color: #000;   /* darker text for bright mode */
+    opacity: 0.7;
+}
 
-        th {
-            background-color: #1f2937;
-            position: sticky;
-            top: 0;
-        }
+    /* Boat (sun) mode */
+    body.boat-mode {
+      --bg-main: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-card-soft: #f8fafc;
+      --border-subtle: #cbd5f5;
+      --text-main: #020617;
+      --text-muted: #4b5563;
+      --accent: #0284c7;
+      --accent-soft: rgba(2, 132, 199, 0.18);
+      --chip-bg: #e2f3ff;
+      background: #e2f3ff;
+    }
 
-        tr:nth-child(even) {
-            background-color: #111827;
-        }
+    .app-shell {
+      width: 100%;
+      max-width: 1200px;
+      padding: 12px;
+      box-sizing: border-box;
+    }
 
-        tr:nth-child(odd) {
-            background-color: #0f172a;
-        }
+    header.app-header {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
 
-        /* flood chart container */
-        #chartContainer {
-            background: #111827;
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 12px;
-        }
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
-        .boat-mode {
-            background-color: white !important;
-            color: black !important;
-        }
+    h1 {
+      font-size: 1.4rem;
+      margin: 0;
+    }
 
-        .boat-mode table tr:nth-child(even) {
-            background-color: #e3e3e3 !important;
-        }
-        .boat-mode table tr:nth-child(odd) {
-            background-color: #f5f5f5 !important;
-        }
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
 
-        /* chart colors for bright mode */
-        .boat-mode canvas {
-            filter: invert(1) hue-rotate(180deg);
-        }
+    .status-pill {
+      font-size: 0.75rem;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: var(--bg-card-soft);
+      border: 1px solid var(--border-subtle);
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
 
-        /* ======================
-           DISCLAIMER POPUP
-        ====================== */
-        #disclaimerPopup {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.65);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            visibility: hidden;
-            opacity: 0;
-            transition: 0.3s;
-        }
+    .status-pill strong {
+      font-weight: 600;
+    }
 
-        #disclaimerPopup.show {
-            visibility: visible;
-            opacity: 1;
-        }
+    .status-pill span {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
 
-        .popup-box {
-            background: #1f2937;
-            padding: 25px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 420px;
-            text-align: center;
-            color: white;
-        }
+    .status-pill .ok {
+      color: var(--success);
+    }
 
-        .popup-box button {
-            margin-top: 15px;
-            padding: 8px 15px;
-            border: none;
-            background: #3b82f6;
-            color: white;
-            font-size: 1rem;
-            border-radius: 6px;
-        }
+    .status-pill .error {
+      color: var(--danger);
+    }
 
-        /* ======================
-           BOTTOM DISCLAIMER
-        ====================== */
-        footer.disclaimer-footer {
-            width: 100%;
-            text-align: center;
-            padding: 20px;
-            font-size: 0.8rem;
-            opacity: 0.6;
-            color: #ccc;
-            margin-top: 40px;
-        }
+    .top-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
 
-        .boat-mode footer.disclaimer-footer {
-            color: #000;
-            opacity: 0.75;
-        }
-    </style>
+    @media (min-width: 768px) {
+      .top-row {
+        flex-direction: row;
+        align-items: stretch;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      padding: 10px 14px;
+      box-sizing: border-box;
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.65);
+    }
+
+    .card-soft {
+      background: var(--bg-card-soft);
+    }
+
+    .card h2 {
+      margin: 0 0 4px;
+      font-size: 0.95rem;
+    }
+
+    .weather-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .weather-main {
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--chip-bg);
+      color: var(--text-main);
+    }
+
+    .boat-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .boat-toggle input {
+      accent-color: var(--accent);
+      transform: scale(1.1);
+    }
+
+    .zip-form {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .zip-form input {
+      width: 90px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    .zip-form button {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .zip-form button:hover {
+      filter: brightness(1.05);
+    }
+
+    .main-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @media (min-width: 980px) {
+      .main-grid {
+        display: grid;
+        grid-template-columns: 2fr;
+      }
+    }
+
+    .table-wrapper {
+      overflow: auto;
+      max-height: calc(100vh - 260px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      background: var(--bg-card);
+      z-index: 2;
+    }
+
+    th,
+    td {
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      white-space: nowrap;
+    }
+
+    th {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.25);
+    }
+
+    .num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .delta-pos {
+      color: var(--success);
+    }
+
+    .delta-neg {
+      color: var(--danger);
+    }
+
+    .chart-card {
+      margin-top: 10px;
+    }
+
+    .chart-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .chart-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 320px;
+      max-height: 340px;
+    }
+
+    @media (min-width: 768px) {
+      .chart-container {
+        height: 360px;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="title-row">
+        <div>
+          <h1>KY Lake Levels</h1>
+          <div class="subtitle">
+            Live levels from your favorite KY lakes
+          </div>
+        </div>
+        <div class="status-pill">
+          <strong id="updated-label">Updated: —</strong>
+          <span id="status-line">Waiting for data…</span>
+          <span style="margin-top: 2px; font-size: 0.7rem">
+            Units: ft, cfs, in
+          </span>
+        </div>
+      </div>
+    </header>
 
-<div class="container">
+    <div class="top-row"><!-- Ad Card -->
+<section class="card card-soft" style="margin-bottom: 10px; padding: 6px 10px;">
+  <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">
+    Sponsored
+  </div>
+  <div style="width: 100%; min-height: 60px; display: flex; justify-content: center; align-items: center;">
+    <!-- Google AdSense ad slot -->
+    <ins class="adsbygoogle"
+         style="display:block;width:100%;"
+         data-ad-client="ca-pub-3651423030244109"
+         data-ad-slot="YYYYYYYYYY"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+</section>
 
-    <h1>KY Lake Levels</h1>
-    <div id="updateStatus">Updated: loading…</div>
-    <br><br>
+      <!-- Weather Card -->
+      <section class="card card-soft" style="flex: 1 1 260px">
+        <h2 id="weather-title">Weather – Morehead, KY</h2>
+        <div class="weather-meta" id="weather-meta">
+          Default: Morehead, KY — enter ZIP to change.
+        </div>
+        <div class="weather-main" id="weather-main">
+          <div>Now: —°F, Wind: — mph</div>
+          <div>High: —°F, Low: —°F, Rain (24h): —"</div>
+        </div>
 
-    <!-- BOAT MODE SWITCH -->
-    <label>
-        <input type="checkbox" id="boatMode"> Boat mode (bright)
-    </label>
-
-    <!-- LAKE TABLE -->
-    <table id="lakeTable">
-        <thead>
-            <tr>
-                <th>Basin</th>
-                <th>Project</th>
-                <th>Pool</th>
-                <th>Dev.</th>
-                <th>24h Δ</th>
-                <th>Rain</th>
-                <th>Inflow</th>
-                <th>Outflow</th>
-                <th>% Util</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td colspan="9">Loading live lake data…</td></tr>
-        </tbody>
-    </table>
-
-    <!-- FLOOD STORAGE CHART -->
-    <div id="chartContainer">
-        <h3>Flood Pool Utilization (% of flood storage used)</h3>
-        <canvas id="floodChart" height="380"></canvas>
+        <div class="badge-row">
+          <form class="zip-form" id="zip-form">
+            <label for="zip-input" class="subtitle" style="font-size: 0.75rem">ZIP (e.g. 40202)</label>
+            <input id="zip-input" type="text" maxlength="5" pattern="\d{5}" value="40351" />
+            <button type="submit">Go</button>
+          </form>
+          <label class="boat-toggle">
+            <input type="checkbox" id="boat-toggle" />
+            <span>Boat mode (bright)</span>
+          </label>
+        </div>
+      </section>
     </div>
 
-</div>
+    <main class="main-grid">
+      <!-- Lake table -->
+      <section class="card">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Basin</th>
+                <th>Project</th>
+                <th class="num">Pool</th>
+                <th class="num">Dev.</th>
+                <th class="num">24h Δ</th>
+                <th class="num">Rain</th>
+                <th class="num">Inflow</th>
+                <th class="num">Outflow</th>
+                <th class="num">% Util</th>
+              </tr>
+            </thead>
+            <tbody id="lakes-body">
+              <tr>
+                <td colspan="9" style="padding: 10px 8px; font-size: 0.8rem">
+                  Loading live lake data…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-<!-- ======================
-     BOTTOM DISCLAIMER
-====================== -->
+        <!-- Chart -->
+        <section class="chart-card">
+          <div class="chart-title">
+            Flood Pool Utilization (% of flood storage used)
+          </div>
+          <div class="chart-subtitle">
+            Based on current pool relative to flood-storage pool.
+          </div>
+          <div class="chart-container">
+            <canvas id="floodChart"></canvas>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // *** CONFIG ***
+    const BACKEND_URL = "https://ky-lake-backend.onrender.com"; // backend API
+
+    let floodChart = null;
+    window.lastLakeData = null; // store last lakes for re-draw
+
+    function formatNumber(value, decimals = 1) {
+      if (value === null || value === undefined || isNaN(value)) return "—";
+      return Number(value).toFixed(decimals);
+    }
+
+    function classifyDelta(v) {
+      if (v > 0) return "delta-pos";
+      if (v < 0) return "delta-neg";
+      return "";
+    }
+
+    async function loadLakes() {
+      const tbody = document.getElementById("lakes-body");
+      const updatedLabel = document.getElementById("updated-label");
+      const statusLine = document.getElementById("status-line");
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" style="padding: 10px 8px; font-size:0.8rem">
+            Loading live lake data…
+          </td>
+        </tr>`;
+
+      try {
+        const resp = await fetch(`${BACKEND_URL}/lakes`, { cache: "no-store" });
+        const data = await resp.json();
+
+        if (data.error) {
+          throw new Error(data.message || "Backend error");
+        }
+
+        const lakes = data.lakes || [];
+        window.lastLakeData = lakes; // save for boat mode re-draw
+
+        // sort by basin then project
+        lakes.sort((a, b) => {
+          const ba = (a.basin || "").localeCompare(b.basin || "");
+          if (ba !== 0) return ba;
+          return (a.project || "").localeCompare(b.project || "");
+        });
+
+        tbody.innerHTML = "";
+        for (const lake of lakes) {
+          const tr = document.createElement("tr");
+
+          const devClass = classifyDelta(lake.deviation);
+          const d24Class = classifyDelta(lake.change24h);
+
+          tr.innerHTML = `
+            <td>${lake.basin || "—"}</td>
+            <td>${lake.project || "—"}</td>
+            <td class="num">${formatNumber(lake.todayPool, 1)}</td>
+            <td class="num ${devClass}">${formatNumber(lake.deviation, 1)}</td>
+            <td class="num ${d24Class}">${formatNumber(lake.change24h, 1)}</td>
+            <td class="num">${formatNumber(lake.precip24h, 2)}</td>
+            <td class="num">${formatNumber(lake.inflow, 0)}</td>
+            <td class="num">${formatNumber(lake.outflow, 0)}</td>
+            <td class="num">${formatNumber(lake.percentUtil, 2)}</td>
+          `;
+
+          tbody.appendChild(tr);
+        }
+
+        const ts = data.timestamp
+          ? new Date(data.timestamp)
+          : new Date();
+        updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
+        statusLine.textContent = `Loaded ${lakes.length} lakes`;
+        statusLine.classList.remove("error");
+        statusLine.classList.add("ok");
+
+        renderFloodChart(lakes);
+      } catch (err) {
+        console.error(err);
+        updatedLabel.textContent = "Updated: error";
+        statusLine.textContent =
+          "Could not reach backend — is it running?";
+        statusLine.classList.remove("ok");
+        statusLine.classList.add("error");
+      }
+    }
+
+    function renderFloodChart(lakes) {
+      const ctx = document.getElementById("floodChart").getContext("2d");
+
+      const usable = lakes
+        .filter(
+          (l) =>
+            l.percentUtil !== null &&
+            l.percentUtil !== undefined &&
+            !isNaN(l.percentUtil)
+        )
+        .sort((a, b) => (a.percentUtil || 0) - (b.percentUtil || 0));
+
+      const labels = usable.map((l) => l.project);
+      const values = usable.map((l) => l.percentUtil);
+
+      if (floodChart) {
+        floodChart.destroy();
+      }
+
+      const isBoat = document.body.classList.contains("boat-mode");
+
+      // Colors change based on mode
+      const axisColor = isBoat ? "#020617" : "#E8F0FF"; // dark text in boat, light in dark mode
+      const gridColor = isBoat
+        ? "rgba(15, 23, 42, 0.25)"
+        : "rgba(232, 240, 255, 0.2)";
+      const labelColor = isBoat ? "#020617" : "#FFFFFF";
+
+      floodChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "% Utilized",
+              data: values,
+              backgroundColor: isBoat
+                ? "#0284c7"
+                : "#3b82f6",
+              borderRadius: 4,
+              barThickness: 14,
+            },
+          ],
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              left: 24,
+              right: 12,
+              top: 8,
+              bottom: 8,
+            },
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: axisColor,
+                font: {
+                  size: 12,
+                  weight: "600",
+                },
+              },
+            },
+            tooltip: {
+              titleColor: "#0B1020",
+              bodyColor: "#0B1020",
+              backgroundColor: "#E8F0FF",
+              borderColor: "#4FC3F7",
+              borderWidth: 1,
+            },
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: axisColor,
+                font: {
+                  size: 11,
+                },
+              },
+              grid: {
+                color: gridColor,
+              },
+            },
+            y: {
+              ticks: {
+                color: labelColor,
+                font: {
+                  size: 12,
+                  weight: "600",
+                },
+              },
+              grid: {
+                color: gridColor.replace("0.2", "0.08"),
+              },
+            },
+          },
+        },
+      });
+    }
+
+    // Weather via ZIP -> zippopotam.us -> open-meteo
+    async function loadWeatherByZip(zip) {
+      const titleEl = document.getElementById("weather-title");
+      const metaEl = document.getElementById("weather-meta");
+      const mainEl = document.getElementById("weather-main");
+
+      try {
+        const geoResp = await fetch(
+          `https://api.zippopotam.us/us/${zip}`
+        );
+        if (!geoResp.ok) throw new Error("ZIP lookup failed");
+
+        const geo = await geoResp.json();
+        const place = geo.places[0];
+        const lat = Number(place.latitude);
+        const lon = Number(place.longitude);
+        const city = place["place name"];
+        const state = place["state abbreviation"];
+
+        titleEl.textContent = `Weather – ${city}, ${state}`;
+        metaEl.textContent = `Showing forecast for ${city}, ${state} (ZIP ${zip})`;
+
+        const meteoResp = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,wind_speed_10m&temperature_unit=fahrenheit&windspeed_unit=mph&forecast_days=1`
+        );
+        const meteo = await meteoResp.json();
+
+        const temps = meteo.hourly.temperature_2m || [];
+        const winds = meteo.hourly.wind_speed_10m || [];
+        const precip = meteo.hourly.precipitation || [];
+
+        const nowIndex = 0;
+        const nowT = temps[nowIndex] ?? null;
+        const nowW = winds[nowIndex] ?? null;
+
+        const high = temps.length
+          ? Math.max(...temps)
+          : null;
+        const low = temps.length
+          ? Math.min(...temps)
+          : null;
+        const rain24 =
+          precip.length &&
+          precip.reduce((a, b) => a + b, 0).toFixed(2);
+
+        mainEl.innerHTML = `
+          <div>Now: ${
+          nowT != null ? `${nowT.toFixed(0)}°F` : "—"
+        }, Wind: ${
+          nowW != null ? `${nowW.toFixed(0)} mph` : "—"
+        }</div>
+          <div>High: ${
+          high != null ? `${high.toFixed(0)}°F` : "—"
+        }, Low: ${
+          low != null ? `${low.toFixed(0)}°F` : "—"
+        }, Rain (24h): ${
+          rain24 != null ? `${rain24}"` : "—"
+        }</div>
+        `;
+      } catch (err) {
+        console.error(err);
+        titleEl.textContent = "Weather – Unknown";
+        metaEl.textContent =
+          "Could not load weather for that ZIP.";
+        mainEl.innerHTML =
+          "<div>Now: —°F, Wind: — mph</div><div>High: —°F, Low: —°F, Rain (24h): —\"</div>";
+      }
+    }
+
+    // Boat mode toggle
+    function setupBoatMode() {
+      const toggle = document.getElementById("boat-toggle");
+      toggle.addEventListener("change", () => {
+        document.body.classList.toggle("boat-mode", toggle.checked);
+
+        // re-draw chart with proper colors if we already have data
+        if (window.lastLakeData) {
+          renderFloodChart(window.lastLakeData);
+        }
+      });
+    }
+
+    function setupZipForm() {
+      const form = document.getElementById("zip-form");
+      const input = document.getElementById("zip-input");
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const zip = input.value.trim();
+        if (/^\d{5}$/.test(zip)) {
+          loadWeatherByZip(zip);
+        }
+      });
+
+      // initial default
+      loadWeatherByZip(input.value.trim() || "40351");
+    }
+
+    // Service worker registration (PWA)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .catch((err) =>
+            console.warn("Service worker registration failed:", err)
+          );
+      });
+    }
+
+    // Initialise
+    document.addEventListener("DOMContentLoaded", () => {
+      setupBoatMode();
+      setupZipForm();
+      loadLakes();
+    });
+  </script>
+
+<style>
+.disclaimer-footer {
+    text-align: center;
+    font-size: 0.75rem;
+    opacity: 0.7;
+    padding: 10px 20px;
+    margin-top: 30px;
+    color: #ccc;
+}
+</style>
 <footer class="disclaimer-footer">
     <p>
-        <strong>Disclaimer:</strong> This application is not affiliated with, endorsed by, or sponsored by
-        the U.S. Army Corps of Engineers. All lake data is publicly available from the USACE Water Management website.
+        <strong>Disclaimer:</strong> This application is not affiliated with, endorsed by, or sponsored by 
+        the U.S. Army Corps of Engineers. All lake data is publicly available from the USACE Water Management website. 
         Accuracy is not guaranteed.
     </p>
 </footer>
 
-<!-- ======================
-     DISCLAIMER POPUP (one-time)
-====================== -->
-<div id="disclaimerPopup">
-    <div class="popup-box">
-        <h3>Disclaimer</h3>
-        <p>
-            This app is NOT affiliated with, endorsed by, or sponsored by the U.S. Army Corps of Engineers.
-            Data is sourced from publicly available USACE systems. Accuracy is not guaranteed.
-        </p>
-        <button id="closePopup">I Understand</button>
-    </div>
-</div>
-
-
-<!-- ======================
-     SCRIPTS
-====================== -->
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-/* ------------------------------
-   BOAT MODE
------------------------------- */
-const boatToggle = document.getElementById("boatMode");
-
-boatToggle.addEventListener("change", () => {
-    const page = document.body;
-
-    if (boatToggle.checked) {
-        page.classList.add("boat-mode");
-    } else {
-        page.classList.remove("boat-mode");
-    }
-
-    if (window.drawFloodChart) {
-        drawFloodChart(window.lastLakeData);
-    }
-});
-
-/* ------------------------------
-   ONE-TIME DISCLAIMER POPUP
------------------------------- */
-document.addEventListener("DOMContentLoaded", () => {
-    if (!localStorage.getItem("acceptedDisclaimer")) {
-        document.getElementById("disclaimerPopup").classList.add("show");
-    }
-});
-
-document.getElementById("closePopup").addEventListener("click", () => {
-    localStorage.setItem("acceptedDisclaimer", "yes");
-    document.getElementById("disclaimerPopup").classList.remove("show");
-});
-
-/* ------------------------------
-   FETCH LAKE DATA
------------------------------- */
-async function loadLakes() {
-    try {
-        const res = await fetch("https://ky-lake-backend.onrender.com/lakes");
-        const json = await res.json();
-
-        window.lastLakeData = json.lakes;
-        populateTable(json.lakes);
-        drawFloodChart(json.lakes);
-
-        document.getElementById("updateStatus").innerHTML =
-            "Updated: " + new Date(json.timestamp).toLocaleString() +
-            "<br>Loaded " + json.lakes.length + " lakes";
-
-    } catch (err) {
-        document.getElementById("updateStatus").innerText = "Error loading data";
-    }
-}
-
-function populateTable(lakes) {
-    const tbody = document.querySelector("#lakeTable tbody");
-    tbody.innerHTML = "";
-
-    lakes.forEach(lake => {
-        const row = `
-            <tr>
-                <td>${lake.basin}</td>
-                <td>${lake.project}</td>
-                <td>${lake.todayPool}</td>
-                <td>${lake.deviation}</td>
-                <td>${lake.change24h}</td>
-                <td>${lake.precip24h}</td>
-                <td>${lake.inflow}</td>
-                <td>${lake.outflow}</td>
-                <td>${lake.percentUtil}</td>
-            </tr>
-        `;
-        tbody.innerHTML += row;
-    });
-}
-
-/* ------------------------------
-   FLOOD CHART
------------------------------- */
-let floodChart;
-
-function drawFloodChart(lakes) {
-    const ctx = document.getElementById("floodChart").getContext("2d");
-
-    const names = lakes.map(a => a.project);
-    const values = lakes.map(a => a.percentUtil);
-
-    if (floodChart) floodChart.destroy();
-
-    const textColor = document.body.classList.contains("boat-mode") ? "black" : "white";
-
-    floodChart = new Chart(ctx, {
-        type: "horizontalBar",
-        data: {
-            labels: names,
-            datasets: [{
-                label: "% Utilized",
-                data: values,
-                backgroundColor: "#38bdf8"
-            }]
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    ticks: { fontColor: textColor }
-                }],
-                yAxes: [{
-                    ticks: { fontColor: textColor }
-                }]
-            },
-            legend: {
-                labels: { fontColor: textColor }
-            }
-        }
-    });
-}
-
-/* ------------------------------
-   Load on page open
------------------------------- */
-loadLakes();
-</script>
-
 </body>
 </html>
+
+
+
+
+
