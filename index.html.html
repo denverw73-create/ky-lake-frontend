@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>KY Lake Levels</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- PWA bits -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      /* Default = DARK MODE (indoor / night) */
+      --bg: #020617;
+      --bg-alt: #111827;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --row-alt: #020617;
+      --weather-bg: #020617;
+    }
+
+    /* Boat mode = ULTRA BRIGHT for sun */
+    :root.boat-mode {
+      --bg: #ffffff;
+      --bg-alt: #f3f4f6;
+      --accent: #0f766e;
+      --accent-soft: #d1fae5;
+      --text: #000000;
+      --muted: #4b5563;
+      --border: #9ca3af;
+      --row-alt: #f9fafb;
+      --weather-bg: #ffffff;
+    }
+
+    body{
+      margin:0;
+      padding:10px;
+      background:var(--bg);
+      color:var(--text);
+      font-family:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .shell{max-width:1100px;margin:0 auto;}
+
+    header{
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+      gap:4px;
+    }
+    .title{font-size:1.5rem;font-weight:800;}
+    .subtitle{font-size:.95rem;color:var(--muted);}
+    .badge{
+      border:2px solid var(--accent);
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:.85rem;
+      font-weight:600;
+      color:var(--accent);
+      background:var(--accent-soft);
+    }
+    .status-text{font-size:.85rem;color:var(--muted);text-align:right;}
+
+    .card{
+      background:var(--bg-alt);
+      border-radius:10px;
+      padding:10px;
+      border:2px solid var(--border);
+      margin-bottom:10px;
+    }
+
+    .table-wrap{
+      max-height:380px;
+      overflow:auto;
+      border-radius:8px;
+      border:2px solid var(--border);
+      background:var(--bg);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:1rem;
+    }
+    th,td{
+      padding:7px 8px;
+      border-bottom:1px solid #1f2937;
+      white-space:nowrap;
+      text-align:right;
+    }
+    thead{
+      position:sticky;
+      top:0;
+      background:var(--bg-alt);
+      z-index:1;
+    }
+    th:nth-child(1), td:nth-child(1){text-align:left;}
+    th:nth-child(2), td:nth-child(2){text-align:left;}
+    tr:nth-child(even) td{
+      background:var(--row-alt);
+    }
+
+    .chart-container{
+      position:relative;
+      height:260px;
+      max-height:260px;
+      background:var(--bg);
+      border-radius:8px;
+      border:2px solid var(--border);
+      padding:6px;
+    }
+
+    .zip-input{
+      padding:6px 10px;
+      border-radius:999px;
+      border:2px solid #6b7280;
+      background:var(--weather-bg);
+      color:var(--text);
+      font-size:.95rem;
+      width:120px;
+      outline:none;
+    }
+    .zip-button{
+      padding:6px 12px;
+      border-radius:999px;
+      border:2px solid var(--accent);
+      background:var(--accent);
+      color:#ffffff;
+      font-size:.95rem;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .zip-button:active{
+      transform:scale(0.97);
+    }
+
+    .weather-main{
+      font-size:1.05rem;
+      font-weight:600;
+      color:var(--text);
+    }
+    .weather-sub{
+      font-size:.9rem;
+      color:var(--muted);
+    }
+
+    .toggle-wrap{
+      margin-top:4px;
+      font-size:.8rem;
+      color:var(--muted);
+      display:flex;
+      justify-content:flex-end;
+    }
+    .toggle-wrap label{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      cursor:pointer;
+    }
+    .toggle-wrap input[type="checkbox"]{
+      width:18px;
+      height:18px;
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div>
+      <div class="title">KY Lake Levels</div>
+      <div class="subtitle">Live USACE levels · Louisville District</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="badge" id="updatedBadge">Updated: loading…</div>
+      <div class="status-text" id="dataStatus">Connecting to backend…</div>
+      <div class="subtitle">Units: ft, cfs, in</div>
+      <div class="toggle-wrap">
+        <label>
+          <input type="checkbox" id="boatToggle">
+          <span>Boat mode (bright)</span>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <!-- Weather card with ZIP search -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+      <div>
+        <div class="subtitle" id="weatherTitle" style="font-size:1.1rem;font-weight:700;color:var(--text);">
+          Weather – Louisville, KY
+        </div>
+        <div id="weatherSubtitleSmall" class="weather-sub">
+          Default: Louisville, KY — enter ZIP to change.
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input id="zipInput" class="zip-input" placeholder="ZIP (e.g. 40202)" />
+        <button id="zipButton" class="zip-button">Go</button>
+      </div>
+    </div>
+    <div id="weatherContent" style="margin-top:6px;">
+      <div class="weather-main">Loading weather…</div>
+    </div>
+  </div>
+
+  <!-- Lake table -->
+  <div class="card table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Basin</th>
+          <th>Project</th>
+          <th>Pool</th>
+          <th>Dev.</th>
+          <th>24h Δ</th>
+          <th>Rain</th>
+          <th>Inflow</th>
+          <th>Outflow</th>
+          <th>% Util</th>
+        </tr>
+      </thead>
+      <tbody id="lakeTableBody">
+        <tr><td colspan="9">Loading live lake data…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Utilization chart -->
+  <div class="card">
+    <div class="subtitle" style="font-size:1.05rem;font-weight:700;color:var(--text);">
+      Flood Pool Utilization (% of flood storage used)
+    </div>
+    <div class="chart-container">
+      <canvas id="lakeChart"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== CONFIG =====
+// 🔧 Replace this with your actual Render URL:
+const PROXY_URL = "https://ky-lake-backend.onrender.com/lakes";
+
+// Default weather location (Louisville)
+const DEFAULT_LAT = 38.25;
+const DEFAULT_LON = -85.76;
+const DEFAULT_LABEL = "Louisville, KY";
+
+let lakes = [];
+
+// ===== BOAT MODE TOGGLE =====
+function setBoatMode(on) {
+  const root = document.documentElement;
+  const toggle = document.getElementById("boatToggle");
+  root.classList.toggle("boat-mode", on);
+  if (toggle) toggle.checked = on;
+  localStorage.setItem("boat_mode", on ? "on" : "off");
+}
+
+// ===== WEATHER FUNCTIONS =====
+function setWeatherLoading(labelText){
+  document.getElementById("weatherContent").innerHTML =
+    '<div class="weather-main">Loading weather…</div>';
+  document.getElementById("weatherTitle").textContent = `Weather – ${labelText}`;
+}
+
+async function loadWeatherFor(lat, lon, label){
+  setWeatherLoading(label);
+  try{
+    const url =
+      "https://api.open-meteo.com/v1/forecast"
+      + `?latitude=${lat}&longitude=${lon}`
+      + "&current_weather=true"
+      + "&daily=temperature_2m_max,temperature_2m_min,precipitation_sum"
+      + "&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch"
+      + "&timezone=auto";
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const cw = data.current_weather;
+    const daily = data.daily;
+
+    const html = `
+      <div class="weather-main">
+        Now: <b>${Math.round(cw.temperature)}°F</b>,
+        Wind: ${Math.round(cw.windspeed)} mph
+      </div>
+      <div class="weather-sub">
+        High: ${Math.round(daily.temperature_2m_max[0])}°F ·
+        Low: ${Math.round(daily.temperature_2m_min[0])}°F ·
+        Rain (24h): ${daily.precipitation_sum[0].toFixed(2)}"
+      </div>
+    `;
+
+    document.getElementById("weatherTitle").textContent = `Weather – ${label}`;
+    document.getElementById("weatherContent").innerHTML = html;
+  }catch(e){
+    console.error(e);
+    document.getElementById("weatherContent").innerHTML =
+      '<div class="weather-main">Weather unavailable.</div>';
+  }
+}
+
+async function searchZipWeather(){
+  const zipInput = document.getElementById("zipInput");
+  const zip = (zipInput.value || "").trim();
+  if (!zip){
+    document.getElementById("weatherSubtitleSmall").textContent =
+      "Default: Louisville, KY — enter ZIP to change.";
+    loadWeatherFor(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LABEL);
+    return;
+  }
+
+  document.getElementById("weatherSubtitleSmall").textContent =
+    "Searching location for ZIP " + zip + "…";
+  document.getElementById("weatherContent").innerHTML =
+    '<div class="weather-main">Looking up coordinates…</div>';
+
+  try{
+    const url =
+      "https://geocoding-api.open-meteo.com/v1/search"
+      + `?name=${encodeURIComponent(zip)}`
+      + "&count=1&language=en&format=json&country=US";
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data || !data.results || data.results.length === 0){
+      document.getElementById("weatherSubtitleSmall").textContent =
+        "No location found for ZIP " + zip + ".";
+      document.getElementById("weatherContent").innerHTML = "";
+      return;
+    }
+
+    const loc = data.results[0];
+    const lat = loc.latitude;
+    const lon = loc.longitude;
+    const label = loc.name && loc.admin1
+      ? `${loc.name}, ${loc.admin1}`
+      : (loc.name || `ZIP ${zip}`);
+
+    document.getElementById("weatherSubtitleSmall").textContent =
+      `Showing forecast for ${label} (ZIP ${zip})`;
+    await loadWeatherFor(lat, lon, label);
+
+  }catch(err){
+    console.error(err);
+    document.getElementById("weatherSubtitleSmall").textContent =
+      "Could not look up that ZIP.";
+    document.getElementById("weatherContent").innerHTML =
+      '<div class="weather-main">Weather lookup failed.</div>';
+  }
+}
+
+// ===== TABLE RENDER =====
+function renderTable() {
+  const body = document.getElementById("lakeTableBody");
+  body.innerHTML = "";
+
+  lakes.forEach(l => {
+    const tr = document.createElement("tr");
+
+    const cells = [
+      l.basin || "—",
+      l.project,
+      l.todayPool != null ? l.todayPool.toFixed(1) : "—",
+      l.deviation != null ? l.deviation.toFixed(1) : "—",
+      l.change24h != null ? l.change24h.toFixed(1) : "—",
+      l.precip24h != null ? l.precip24h.toFixed(2) : "—",
+      l.inflow != null ? l.inflow.toLocaleString() : "—",
+      l.outflow != null ? l.outflow.toLocaleString() : "—",
+      (l.percentUtil ?? 0).toFixed(2) + "%"
+    ];
+
+    cells.forEach((text, idx) => {
+      const td = document.createElement("td");
+      td.textContent = text;
+
+      const value = parseFloat(text);
+      if (idx === 3 || idx === 4) {
+        if (!isNaN(value)) {
+          if (value > 0) td.style.color = "#4ade80"; // green-ish
+          if (value < 0) td.style.color = "#f97373"; // red-ish
+        }
+      }
+
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+
+// ===== STRIPED BACKGROUND FOR CHART =====
+const stripePlugin = {
+  id: "stripeBackground",
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea, scales } = chart;
+    const { top, bottom, left, right } = chartArea;
+    const yScale = scales.y;
+    if (!yScale) return;
+
+    const tickCount = yScale.ticks.length;
+    ctx.save();
+
+    for (let i = 0; i < tickCount; i++) {
+      if (i % 2 === 0) {
+        const center = yScale.getPixelForTick(i);
+
+        let upper, lower;
+        if (i === 0) {
+          const next = yScale.getPixelForTick(i + 1);
+          const half = (next - center) / 2;
+          upper = center - half;
+          lower = center + half;
+        } else if (i === tickCount - 1) {
+          const prev = yScale.getPixelForTick(i - 1);
+          const half = (center - prev) / 2;
+          upper = center - half;
+          lower = center + half;
+        } else {
+          const prev = yScale.getPixelForTick(i - 1);
+          const next = yScale.getPixelForTick(i + 1);
+          upper = center - (center - prev) / 2;
+          lower = center + (next - center) / 2;
+        }
+
+        upper = Math.max(upper, top);
+        lower = Math.min(lower, bottom);
+
+        ctx.fillStyle = "rgba(0,0,0,0.06)";
+        ctx.fillRect(left, upper, right - left, lower - upper);
+      }
+    }
+
+    ctx.restore();
+  }
+};
+
+let lakeChart = new Chart(document.getElementById("lakeChart"), {
+  type: "bar",
+  data: {
+    labels: [],
+    datasets: [{
+      label: "% Utilized",
+      data: [],
+      borderWidth: 2,
+      backgroundColor: "#0ea5e9",
+      borderColor: "#000000"
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: "y",
+    scales: {
+      x: {
+        grid: {
+          color: "#9ca3af",
+          lineWidth: 1.5,
+          drawBorder: true,
+          borderColor: "#000000"
+        },
+        ticks: {
+          color: "#000000",
+          font: { size: 12 }
+        }
+      },
+      y: {
+        grid: {
+          color: "#6b7280",
+          lineWidth: 1.8,
+          drawBorder: true,
+          borderColor: "#000000"
+        },
+        ticks: {
+          color: "#000000",
+          font: { size: 13 }
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        labels: { color: "#000000", font: { size: 12 } }
+      }
+    }
+  },
+  plugins: [stripePlugin]
+});
+
+function updateUtilChart(){
+  lakeChart.data.labels = lakes.map(l => l.project);
+  lakeChart.data.datasets[0].data = lakes.map(l => l.percentUtil ?? 0);
+  lakeChart.update();
+}
+
+// ===== LOAD LAKE DATA FROM BACKEND =====
+async function loadLakeDataFromBackend(){
+  try{
+    document.getElementById("dataStatus").textContent = "Loading live lake data…";
+    const res = await fetch(PROXY_URL, { cache: "no-cache" });
+    const json = await res.json();
+
+    if(json.error){
+      document.getElementById("dataStatus").textContent =
+        "Backend error: " + (json.message || "");
+      document.getElementById("updatedBadge").textContent = "Updated: error";
+      return;
+    }
+
+    lakes = json.lakes || [];
+
+    const ts = json.timestamp ? new Date(json.timestamp) : new Date();
+    document.getElementById("updatedBadge").textContent =
+      "Updated: " + ts.toLocaleString();
+    document.getElementById("dataStatus").textContent =
+      `Loaded ${lakes.length} lakes`;
+
+    renderTable();
+    updateUtilChart();
+
+  }catch(err){
+    console.error(err);
+    document.getElementById("dataStatus").textContent =
+      "Could not reach backend — check connection.";
+    document.getElementById("updatedBadge").textContent = "Updated: error";
+  }
+}
+
+// ===== SERVICE WORKER (PWA) =====
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .catch(err => console.error("SW registration failed:", err));
+}
+
+// ===== INIT =====
+document.addEventListener("DOMContentLoaded", () => {
+  // Boat mode: default ON for first visit, then remember
+  const stored = localStorage.getItem("boat_mode");
+  const startBoat = stored ? stored === "on" : true;
+  setBoatMode(startBoat);
+
+  const zipInput = document.getElementById("zipInput");
+  const zipButton = document.getElementById("zipButton");
+  const boatToggle = document.getElementById("boatToggle");
+
+  zipButton.addEventListener("click", searchZipWeather);
+  zipInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") searchZipWeather();
+  });
+
+  boatToggle.addEventListener("change", (e) => {
+    setBoatMode(e.target.checked);
+  });
+
+  loadWeatherFor(DEFAULT_LAT, DEFAULT_LON, DEFAULT_LABEL);
+  loadLakeDataFromBackend();
+});
+</script>
+</body>
+</html>
