@@ -173,6 +173,14 @@
       margin-top: 6px;
     }
 
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--chip-bg);
+      color: var(--text-main);
+    }
+
     .boat-toggle {
       display: inline-flex;
       align-items: center;
@@ -241,16 +249,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.82rem;
-    }
-
-    @media (max-width: 480px) {
-      table {
-        font-size: 0.9rem;
-      }
-      th, td {
-        padding: 7px 6px;
-      }
+      font-size: 0.8rem;
     }
 
     thead {
@@ -275,11 +274,7 @@
     }
 
     tbody tr:nth-child(even) {
-      background: rgba(15, 23, 42, 0.18);
-    }
-
-    tbody tr:hover {
-      background: rgba(59, 130, 246, 0.14);
+      background: rgba(15, 23, 42, 0.25);
     }
 
     .num {
@@ -297,26 +292,21 @@
 
     .fav-cell {
       text-align: center;
-      width: 34px;
+      width: 30px;
     }
 
     .fav-btn {
       background: transparent;
       border: none;
       cursor: pointer;
-      font-size: 1.1rem;
+      font-size: 1rem;
       line-height: 1;
-      padding: 4px;
+      padding: 0;
       color: #64748b;
-      border-radius: 999px;
     }
 
     .fav-btn.favorited {
       color: #fbbf24;
-    }
-
-    .fav-btn:active {
-      transform: scale(0.92);
     }
 
     .chart-card {
@@ -359,23 +349,16 @@
     .disclaimer-footer {
       width: 100%;
       text-align: center;
-      margin-top: 22px;
-      padding: 14px 12px 18px;
-      font-size: 0.78rem;
-      opacity: 0.8;
-      color: #d1d5db;
-    }
-
-    .disclaimer-footer p {
-      margin: 0;
-      max-width: 900px;
-      margin-inline: auto;
-      line-height: 1.4;
+      margin-top: 40px;
+      padding: 20px 10px;
+      font-size: 0.8rem;
+      opacity: 0.7;
+      color: #ccc;
     }
 
     .boat-mode .disclaimer-footer {
-      color: #111827;
-      opacity: 0.9;
+      color: #000;
+      opacity: 0.7;
     }
 
     /* Disclaimer modal */
@@ -472,11 +455,7 @@
                data-ad-format="auto"
                data-full-width-responsive="true"></ins>
           <script>
-            try {
-              (adsbygoogle = window.adsbygoogle || []).push({});
-            } catch (e) {
-              console.warn("AdSense error:", e);
-            }
+            (adsbygoogle = window.adsbygoogle || []).push({});
           </script>
         </div>
       </section>
@@ -545,7 +524,7 @@
         <section class="chart-card">
           <div class="chart-header">
             <div class="chart-title">
-              Flood Pool Utilization / Lake Metrics
+              Flood Pool Utilization (% of flood storage used)
             </div>
             <div>
               <label style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;">
@@ -575,7 +554,7 @@
       <p>
         <strong>Disclaimer:</strong> This application is not affiliated with, endorsed by, or sponsored by 
         the U.S. Army Corps of Engineers. All lake data is publicly available from the USACE Water Management website. 
-        Accuracy is not guaranteed. Always verify conditions locally and use proper judgment on the water.
+        Accuracy is not guaranteed.
       </p>
     </footer>
   </div>
@@ -600,18 +579,16 @@
     const BACKEND_URL = "https://ky-lake-backend.onrender.com"; // backend API
 
     let floodChart = null;
-    window.lastLakeData = null;
+    window.lastLakeData = null; // store last lakes for re-draw
     let currentChartMetric = "percentUtil";
 
-    // Keys for localStorage
+    // Favorites & alerts
     const FAVORITES_KEY = "kyLakeFavorites";
     const LAST_DATA_KEY = "kyLakeLastData";
     const ALERTS_ENABLED_KEY = "kyLakeAlertsEnabled";
     const ALERTS_LAST_KEY = "kyLakeAlertsLast";
     const DISCLAIMER_KEY = "kyLakeDisclaimerAccepted";
-    const BOATMODE_KEY = "kyLakeBoatMode";
 
-    // ---- Favorites & alerts helpers ----
     function getFavorites() {
       try {
         const raw = localStorage.getItem(FAVORITES_KEY);
@@ -722,7 +699,7 @@
       }
 
       const lakes = data.lakes || [];
-      window.lastLakeData = lakes;
+      window.lastLakeData = lakes; // save for boat mode / chart re-draw
 
       const favorites = getFavorites();
       const favSet = new Set(favorites);
@@ -833,7 +810,8 @@
 
       const isBoat = document.body.classList.contains("boat-mode");
 
-      const axisColor = isBoat ? "#020617" : "#E8F0FF";
+      // Colors change based on mode
+      const axisColor = isBoat ? "#020617" : "#E8F0FF"; // dark text in boat, light in dark mode
       const gridColor = isBoat
         ? "rgba(15, 23, 42, 0.25)"
         : "rgba(232, 240, 255, 0.2)";
@@ -987,20 +965,13 @@
       }
     }
 
-    // Boat mode toggle (saved to localStorage)
+    // Boat mode toggle
     function setupBoatMode() {
       const toggle = document.getElementById("boat-toggle");
-      const saved = localStorage.getItem(BOATMODE_KEY) === "true";
-      if (saved) {
-        toggle.checked = true;
-        document.body.classList.add("boat-mode");
-      }
-
       toggle.addEventListener("change", () => {
-        const on = toggle.checked;
-        document.body.classList.toggle("boat-mode", on);
-        localStorage.setItem(BOATMODE_KEY, on ? "true" : "false");
+        document.body.classList.toggle("boat-mode", toggle.checked);
 
+        // re-draw chart with proper colors if we already have data
         if (window.lastLakeData) {
           renderFloodChart(window.lastLakeData);
         }
