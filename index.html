@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
 
-  <!-- Google AdSense -->
+  <!-- Google Ads -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3651423030244109"
-          crossorigin="anonymous"></script>
+     crossorigin="anonymous"></script>
 
   <title>KY Lake Levels</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -13,7 +13,6 @@
   <!-- PWA bits -->
   <meta name="theme-color" content="#021326" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" type="image/png" href="/icons/ky-lake-192.png" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -35,13 +34,28 @@
 
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+      font-family: system-ui, sans-serif;
       background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
       justify-content: center;
+    }
+
+    /* Footer disclaimer */
+    .disclaimer-footer {
+      width: 100%;
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px 10px;
+      font-size: 0.8rem;
+      opacity: 0.6;
+      color: #ccc;
+    }
+
+    .boat-mode .disclaimer-footer {
+      color: #000;
+      opacity: 0.7;
     }
 
     /* Boat (sun) mode */
@@ -62,14 +76,12 @@
       width: 100%;
       max-width: 1200px;
       padding: 12px;
-      box-sizing: border-box;
     }
 
     header.app-header {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
     }
 
     .title-row {
@@ -92,31 +104,13 @@
 
     .status-pill {
       font-size: 0.75rem;
+      padding: 6px 12px;
       border-radius: 999px;
-      padding: 4px 10px;
       background: var(--bg-card-soft);
       border: 1px solid var(--border-subtle);
-      display: inline-flex;
+      display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 2px;
-    }
-
-    .status-pill strong {
-      font-weight: 600;
-    }
-
-    .status-pill span {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-
-    .status-pill .ok {
-      color: var(--success);
-    }
-
-    .status-pill .error {
-      color: var(--danger);
     }
 
     .top-row {
@@ -126,1013 +120,322 @@
       margin-bottom: 10px;
     }
 
-    @media (min-width: 768px) {
+    @media (min-width: 760px) {
       .top-row {
         flex-direction: row;
-        align-items: stretch;
       }
     }
 
     .card {
       background: var(--bg-card);
-      border-radius: 16px;
       border: 1px solid var(--border-subtle);
-      padding: 10px 14px;
-      box-sizing: border-box;
-      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.65);
+      border-radius: 16px;
+      padding: 12px;
     }
 
     .card-soft {
       background: var(--bg-card-soft);
     }
 
-    .card h2 {
-      margin: 0 0 4px;
-      font-size: 0.95rem;
-    }
-
-    .weather-meta {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .weather-main {
-      font-size: 0.9rem;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .badge-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-    }
-
-    .boat-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-
-    .boat-toggle input {
-      accent-color: var(--accent);
-      transform: scale(1.1);
-    }
-
-    .zip-form {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
-    .zip-form input {
-      width: 90px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-main);
-      color: var(--text-main);
-      font-size: 0.8rem;
-      outline: none;
-    }
-
-    .zip-form button {
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: none;
-      background: var(--accent);
-      color: #ffffff;
-      font-size: 0.75rem;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .zip-form button:hover {
-      filter: brightness(1.05);
-    }
-
-    .main-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    @media (min-width: 980px) {
-      .main-grid {
-        display: grid;
-        grid-template-columns: 2fr;
-      }
-    }
-
+    /* Table */
     .table-wrapper {
-      overflow: auto;
+      overflow-x: auto;
       max-height: calc(100vh - 260px);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
     }
 
-    @media (max-width: 480px) {
-      table {
-        font-size: 0.9rem;
-      }
-      th, td {
-        padding: 7px 6px;
-      }
-    }
-
-    thead {
-      position: sticky;
-      top: 0;
-      background: var(--bg-card);
-      z-index: 2;
-    }
-
-    th,
-    td {
+    th, td {
       padding: 6px 8px;
-      text-align: left;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      border-bottom: 1px solid rgba(148,163,184,0.16);
       white-space: nowrap;
     }
 
     th {
-      font-size: 0.75rem;
       color: var(--text-muted);
+      font-size: .75rem;
       font-weight: 600;
     }
 
     tbody tr:nth-child(even) {
-      background: rgba(15, 23, 42, 0.18);
-    }
-
-    tbody tr:hover {
-      background: rgba(59, 130, 246, 0.14);
+      background: rgba(255,255,255,0.04);
     }
 
     .num {
       text-align: right;
-      font-variant-numeric: tabular-nums;
     }
 
-    .delta-pos {
-      color: var(--success);
-    }
+    .delta-pos { color: var(--success); }
+    .delta-neg { color: var(--danger); }
 
-    .delta-neg {
-      color: var(--danger);
-    }
-
-    .fav-cell {
-      text-align: center;
-      width: 34px;
-    }
-
-    .fav-btn {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-size: 1.1rem;
-      line-height: 1;
-      padding: 4px;
-      color: #64748b;
-      border-radius: 999px;
-    }
-
-    .fav-btn.favorited {
-      color: #fbbf24;
-    }
-
-    .fav-btn:active {
-      transform: scale(0.92);
-    }
-
-    .chart-card {
+    /* Chart */
+    .chart-container {
+      height: 340px;
       margin-top: 10px;
     }
 
-    .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 4px;
-    }
-
-    .chart-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .chart-subtitle {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .chart-container {
-      position: relative;
-      height: 320px;
-      max-height: 340px;
-    }
-
-    @media (min-width: 768px) {
-      .chart-container {
-        height: 360px;
-      }
-    }
-
-    /* Disclaimer footer */
-    .disclaimer-footer {
-      width: 100%;
-      text-align: center;
-      margin-top: 22px;
-      padding: 14px 12px 18px;
-      font-size: 0.78rem;
-      opacity: 0.8;
-      color: #d1d5db;
-    }
-
-    .disclaimer-footer p {
-      margin: 0;
-      max-width: 900px;
-      margin-inline: auto;
-      line-height: 1.4;
-    }
-
-    .boat-mode .disclaimer-footer {
-      color: #111827;
-      opacity: 0.9;
-    }
-
-    /* Disclaimer modal */
-    .modal-backdrop {
+    /* Disclaimer Pop-up modal */
+    #disclaimer-modal {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.75);
-      display: flex;
-      align-items: center;
+      background: rgba(0,0,0,0.55);
+      display: none;
       justify-content: center;
+      align-items: center;
       z-index: 9999;
     }
 
-    .modal {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 16px 18px;
-      max-width: 420px;
-      margin: 0 16px;
-      border: 1px solid var(--border-subtle);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
+    #disclaimer-box {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 14px;
+      max-width: 90%;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
 
-    .modal h2 {
-      margin: 0 0 8px;
-      font-size: 1rem;
-    }
-
-    .modal p {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin: 0 0 10px;
-    }
-
-    .modal button {
-      margin-top: 6px;
-      padding: 6px 14px;
-      border-radius: 999px;
+    #disclaimer-box button {
+      margin-top: 14px;
+      padding: 8px 16px;
       border: none;
-      background: var(--accent);
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.85rem;
+      background: #3b82f6;
+      color: white;
+      border-radius: 8px;
+      font-size: 1rem;
       cursor: pointer;
     }
 
-    .alert-toggle-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-
-    .alert-toggle-label input {
-      transform: scale(1.1);
-      accent-color: var(--accent);
-    }
   </style>
 </head>
 
 <body>
-  <div class="app-shell">
-    <header class="app-header">
-      <div class="title-row">
-        <div>
-          <h1>KY Lake Levels</h1>
-          <div class="subtitle">
-            Live levels from your favorite KY lakes
-          </div>
-        </div>
-        <div class="status-pill">
-          <strong id="updated-label">Updated: —</strong>
-          <span id="status-line">Waiting for data…</span>
-          <span style="margin-top: 2px; font-size: 0.7rem">
-            Units: ft, cfs, in
-          </span>
-        </div>
+
+<!-- Disclaimer pop-up -->
+<div id="disclaimer-modal">
+  <div id="disclaimer-box">
+    <h3>Disclaimer</h3>
+    <p>
+      This application is not affiliated with or endorsed by the U.S. Army Corps of Engineers.
+      Data is public and accuracy is not guaranteed.
+    </p>
+    <button onclick="closeDisclaimer()">OK</button>
+  </div>
+</div>
+
+<div class="app-shell">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="title-row">
+      <div>
+        <h1>KY Lake Levels</h1>
+        <div class="subtitle">Live levels from your favorite KY lakes</div>
       </div>
-    </header>
 
-    <div class="top-row">
-      <!-- Ad Card -->
-      <section class="card card-soft" style="margin-bottom: 10px; padding: 6px 10px;">
-        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">
-          Sponsored
-        </div>
-        <div style="width: 100%; min-height: 60px; display: flex; justify-content: center; align-items: center;">
-          <ins class="adsbygoogle"
-               style="display:block;width:100%;"
-               data-ad-client="ca-pub-3651423030244109"
-               data-ad-slot="YYYYYYYYYY"
-               data-ad-format="auto"
-               data-full-width-responsive="true"></ins>
-          <script>
-            try {
-              (adsbygoogle = window.adsbygoogle || []).push({});
-            } catch (e) {
-              console.warn("AdSense error:", e);
-            }
-          </script>
-        </div>
-      </section>
-
-      <!-- Weather + toggles Card -->
-      <section class="card card-soft" style="flex: 1 1 260px">
-        <h2 id="weather-title">Weather – Morehead, KY</h2>
-        <div class="weather-meta" id="weather-meta">
-          Default: Morehead, KY — enter ZIP to change.
-        </div>
-        <div class="weather-main" id="weather-main">
-          <div>Now: —°F, Wind: — mph</div>
-          <div>High: —°F, Low: —°F, Rain (24h): —"</div>
-        </div>
-
-        <div class="badge-row">
-          <form class="zip-form" id="zip-form">
-            <label for="zip-input" class="subtitle" style="font-size: 0.75rem">ZIP (e.g. 40202)</label>
-            <input id="zip-input" type="text" maxlength="5" pattern="\d{5}" value="40351" />
-            <button type="submit">Go</button>
-          </form>
-          <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
-            <label class="boat-toggle">
-              <input type="checkbox" id="boat-toggle" />
-              <span>Boat mode (bright)</span>
-            </label>
-            <label class="alert-toggle-label">
-              <input type="checkbox" id="alerts-toggle" />
-              <span>Alerts for favorites (24h Δ ≥ 2 ft)</span>
-            </label>
-          </div>
-        </div>
-      </section>
+      <div class="status-pill">
+        <strong id="updated-label">Updated: —</strong>
+        <span id="status-line">Loading…</span>
+      </div>
     </div>
+  </header>
 
-    <main class="main-grid">
-      <!-- Lake table -->
-      <section class="card">
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:30px;">★</th>
-                <th>Basin</th>
-                <th>Project</th>
-                <th class="num">Pool</th>
-                <th class="num">Dev.</th>
-                <th class="num">24h Δ</th>
-                <th class="num">Rain</th>
-                <th class="num">Inflow</th>
-                <th class="num">Outflow</th>
-                <th class="num">% Util</th>
-              </tr>
-            </thead>
-            <tbody id="lakes-body">
-              <tr>
-                <td colspan="10" style="padding: 10px 8px; font-size: 0.8rem">
-                  Loading live lake data…
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+  <div class="top-row">
 
-        <!-- Chart -->
-        <section class="chart-card">
-          <div class="chart-header">
-            <div class="chart-title">
-              Flood Pool Utilization / Lake Metrics
-            </div>
-            <div>
-              <label style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;">
-                Chart metric:
-              </label>
-              <select id="chart-metric" style="font-size:0.75rem; padding:2px 6px; border-radius:999px; border:1px solid var(--border-subtle); background:var(--bg-main); color:var(--text-main);">
-                <option value="percentUtil">% Utilization</option>
-                <option value="todayPool">Pool Elevation</option>
-                <option value="deviation">Deviation</option>
-                <option value="inflow">Inflow</option>
-                <option value="outflow">Outflow</option>
-              </select>
-            </div>
-          </div>
-          <div class="chart-subtitle">
-            Based on current pool and selected metric.
-          </div>
-          <div class="chart-container">
-            <canvas id="floodChart"></canvas>
-          </div>
-        </section>
-      </section>
-    </main>
+    <!-- Ad Section -->
+    <section class="card card-soft" style="min-height: 60px;">
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Sponsored</div>
+      <ins class="adsbygoogle"
+         style="display:block;width:100%;"
+         data-ad-client="ca-pub-3651423030244109"
+         data-ad-slot="YYYYYYYYYY"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </section>
 
-    <!-- Disclaimer footer -->
+    <!-- Weather -->
+    <section class="card card-soft" style="flex: 1 1 260px;">
+      <h2 id="weather-title">Weather – Morehead, KY</h2>
+      <div id="weather-meta" class="subtitle">Default: Morehead, KY</div>
+      <div id="weather-main">Now: —°F</div>
+
+      <form id="zip-form" style="margin-top:6px;">
+        <input id="zip-input" value="40351" maxlength="5" />
+        <button>Go</button>
+        <label><input type="checkbox" id="boat-toggle" /> Boat Mode</label>
+      </form>
+    </section>
+  </div>
+
+  <!-- LAKE TABLE + CHART -->
+  <main>
+    <section class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Basin</th><th>Project</th>
+              <th class="num">Pool</th>
+              <th class="num">Dev</th>
+              <th class="num">24h Δ</th>
+              <th class="num">Rain</th>
+              <th class="num">In</th>
+              <th class="num">Out</th>
+              <th class="num">% Util</th>
+            </tr>
+          </thead>
+          <tbody id="lakes-body">
+            <tr><td colspan="9">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="floodChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Footer Disclaimer -->
     <footer class="disclaimer-footer">
-      <p>
-        <strong>Disclaimer:</strong> This application is not affiliated with, endorsed by, or sponsored by 
-        the U.S. Army Corps of Engineers. All lake data is publicly available from the USACE Water Management website. 
-        Accuracy is not guaranteed. Always verify conditions locally and use proper judgment on the water.
-      </p>
+      <strong>Disclaimer:</strong> Not affiliated with the U.S. Army Corps of Engineers.  
+      All data is public and accuracy is not guaranteed.
     </footer>
-  </div>
+  </main>
+</div>
 
-  <!-- Disclaimer modal (shows once per device) -->
-  <div id="disclaimer-modal-backdrop" class="modal-backdrop" style="display:none;">
-    <div class="modal">
-      <h2>Important Disclaimer</h2>
-      <p>
-        This application is not affiliated with, endorsed by, or sponsored by the U.S. Army Corps of Engineers.
-        All lake data is publicly available from the USACE Water Management website and accuracy is not guaranteed.
-      </p>
-      <p>
-        By using this app, you agree that you are responsible for your own safety and decisions on the water.
-      </p>
-      <button id="disclaimer-accept-btn">I Understand</button>
-    </div>
-  </div>
+<script>
+const BACKEND_URL = "https://ky-lake-backend.onrender.com";
+let floodChart = null;
+window.lastLakeData = null;
 
-  <script>
-    // *** CONFIG ***
-    const BACKEND_URL = "https://ky-lake-backend.onrender.com"; // backend API
+/* ------------------------------ Disclaimer ------------------------------ */
+function closeDisclaimer() {
+  document.getElementById("disclaimer-modal").style.display = "none";
+  localStorage.setItem("disclaimerSeen", "yes");
+}
 
-    let floodChart = null;
-    window.lastLakeData = null;
-    let currentChartMetric = "percentUtil";
+function showDisclaimerIfNeeded() {
+  if (!localStorage.getItem("disclaimerSeen")) {
+    document.getElementById("disclaimer-modal").style.display = "flex";
+  }
+}
 
-    // Keys for localStorage
-    const FAVORITES_KEY = "kyLakeFavorites";
-    const LAST_DATA_KEY = "kyLakeLastData";
-    const ALERTS_ENABLED_KEY = "kyLakeAlertsEnabled";
-    const ALERTS_LAST_KEY = "kyLakeAlertsLast";
-    const DISCLAIMER_KEY = "kyLakeDisclaimerAccepted";
-    const BOATMODE_KEY = "kyLakeBoatMode";
+/* ------------------------------ Load Lakes ------------------------------ */
+async function loadLakes() {
+  const tbody = document.getElementById("lakes-body");
+  const updatedLabel = document.getElementById("updated-label");
+  const statusLine = document.getElementById("status-line");
 
-    // ---- Favorites & alerts helpers ----
-    function getFavorites() {
-      try {
-        const raw = localStorage.getItem(FAVORITES_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch {
-        return [];
-      }
-    }
+  try {
+    const resp = await fetch(`${BACKEND_URL}/lakes`, { cache: "no-store" });
+    const data = await resp.json();
 
-    function saveFavorites(list) {
-      localStorage.setItem(FAVORITES_KEY, JSON.stringify(list));
-    }
+    if (data.error) throw new Error(data.message);
+    const lakes = data.lakes || [];
+    window.lastLakeData = lakes;
 
-    function getAlertsEnabled() {
-      return localStorage.getItem(ALERTS_ENABLED_KEY) === "true";
-    }
-
-    function setAlertsEnabled(v) {
-      localStorage.setItem(ALERTS_ENABLED_KEY, v ? "true" : "false");
-    }
-
-    function getAlertsLast() {
-      try {
-        const raw = localStorage.getItem(ALERTS_LAST_KEY);
-        return raw ? JSON.parse(raw) : {};
-      } catch {
-        return {};
-      }
-    }
-
-    function setAlertsLast(obj) {
-      localStorage.setItem(ALERTS_LAST_KEY, JSON.stringify(obj));
-    }
-
-    function formatNumber(value, decimals = 1) {
-      if (value === null || value === undefined || isNaN(value)) return "—";
-      return Number(value).toFixed(decimals);
-    }
-
-    function classifyDelta(v) {
-      if (v > 0) return "delta-pos";
-      if (v < 0) return "delta-neg";
-      return "";
-    }
-
-    function cacheLakeData(data) {
-      try {
-        localStorage.setItem(
-          LAST_DATA_KEY,
-          JSON.stringify({
-            timestamp: data.timestamp || new Date().toISOString(),
-            lakes: data.lakes || [],
-          })
-        );
-      } catch (e) {
-        console.warn("Unable to cache lake data", e);
-      }
-    }
-
-    function loadCachedLakeData() {
-      try {
-        const raw = localStorage.getItem(LAST_DATA_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
-      } catch {
-        return null;
-      }
-    }
-
-    async function loadLakes() {
-      const tbody = document.getElementById("lakes-body");
-      const updatedLabel = document.getElementById("updated-label");
-      const statusLine = document.getElementById("status-line");
-
-      tbody.innerHTML = `
+    tbody.innerHTML = "";
+    for (const l of lakes) {
+      tbody.innerHTML += `
         <tr>
-          <td colspan="10" style="padding: 10px 8px; font-size:0.8rem">
-            Loading live lake data…
-          </td>
+          <td>${l.basin || "—"}</td>
+          <td>${l.project}</td>
+          <td class="num">${l.todayPool.toFixed(1)}</td>
+          <td class="num">${l.deviation.toFixed(1)}</td>
+          <td class="num">${l.change24h.toFixed(1)}</td>
+          <td class="num">${l.precip24h.toFixed(2)}</td>
+          <td class="num">${l.inflow}</td>
+          <td class="num">${l.outflow}</td>
+          <td class="num">${l.percentUtil.toFixed(2)}</td>
         </tr>`;
-
-      let data = null;
-      let fromCache = false;
-
-      try {
-        const resp = await fetch(`${BACKEND_URL}/lakes`, { cache: "no-store" });
-        data = await resp.json();
-
-        if (data.error) {
-          throw new Error(data.message || "Backend error");
-        }
-
-        cacheLakeData(data);
-      } catch (err) {
-        console.error("Live fetch failed, trying cache:", err);
-        const cached = loadCachedLakeData();
-        if (cached && cached.lakes && cached.lakes.length) {
-          data = cached;
-          fromCache = true;
-        } else {
-          updatedLabel.textContent = "Updated: error";
-          statusLine.textContent =
-            "Could not reach backend — is it running?";
-          statusLine.classList.remove("ok");
-          statusLine.classList.add("error");
-          return;
-        }
-      }
-
-      const lakes = data.lakes || [];
-      window.lastLakeData = lakes;
-
-      const favorites = getFavorites();
-      const favSet = new Set(favorites);
-
-      // sort: favorites first, then basin, then project
-      lakes.sort((a, b) => {
-        const af = favSet.has(a.project);
-        const bf = favSet.has(b.project);
-        if (af !== bf) return af ? -1 : 1;
-
-        const ba = (a.basin || "").localeCompare(b.basin || "");
-        if (ba !== 0) return ba;
-        return (a.project || "").localeCompare(b.project || "");
-      });
-
-      tbody.innerHTML = "";
-      for (const lake of lakes) {
-        const tr = document.createElement("tr");
-
-        const devClass = classifyDelta(lake.deviation);
-        const d24Class = classifyDelta(lake.change24h);
-        const isFav = favSet.has(lake.project);
-
-        tr.innerHTML = `
-          <td class="fav-cell">
-            <button class="fav-btn ${isFav ? "favorited" : ""}"
-                    data-project="${lake.project}">
-              ${isFav ? "★" : "☆"}
-            </button>
-          </td>
-          <td>${lake.basin || "—"}</td>
-          <td>${lake.project || "—"}</td>
-          <td class="num">${formatNumber(lake.todayPool, 1)}</td>
-          <td class="num ${devClass}">${formatNumber(lake.deviation, 1)}</td>
-          <td class="num ${d24Class}">${formatNumber(lake.change24h, 1)}</td>
-          <td class="num">${formatNumber(lake.precip24h, 2)}</td>
-          <td class="num">${formatNumber(lake.inflow, 0)}</td>
-          <td class="num">${formatNumber(lake.outflow, 0)}</td>
-          <td class="num">${formatNumber(lake.percentUtil, 2)}</td>
-        `;
-
-        tbody.appendChild(tr);
-      }
-
-      // Hook up favorite buttons
-      tbody.querySelectorAll(".fav-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const project = btn.getAttribute("data-project");
-          const favs = new Set(getFavorites());
-          if (favs.has(project)) {
-            favs.delete(project);
-          } else {
-            favs.add(project);
-          }
-          saveFavorites(Array.from(favs));
-          loadLakes(); // re-load to reorder & update icons
-        });
-      });
-
-      const ts = data.timestamp
-        ? new Date(data.timestamp)
-        : new Date();
-      updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
-      if (fromCache) {
-        statusLine.textContent = `Using cached data (${lakes.length} lakes) – offline`;
-        statusLine.classList.remove("ok");
-        statusLine.classList.add("error");
-      } else {
-        statusLine.textContent = `Loaded ${lakes.length} lakes`;
-        statusLine.classList.remove("error");
-        statusLine.classList.add("ok");
-      }
-
-      renderFloodChart(lakes);
-      maybeNotifyFavorites(lakes);
     }
 
-    function renderFloodChart(lakes) {
-      const ctx = document.getElementById("floodChart").getContext("2d");
+    /* Time label fix */
+    let ts = data.timestamp ? new Date(data.timestamp) : new Date();
+    const now = new Date();
+    const diffMins = Math.round((now - ts) / 60000);
+    let age = diffMins < 1 ? "just now" :
+              diffMins < 60 ? `${diffMins} min ago` :
+              `${Math.round(diffMins/60)} hrs ago`;
 
-      const metric = currentChartMetric;
+    const tStr = ts.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    updatedLabel.textContent = `Updated: ${tStr} (${age})`;
 
-      const metricConfig = {
-        percentUtil: { label: "% Utilized", decimals: 2 },
-        todayPool: { label: "Pool Elevation (ft)", decimals: 1 },
-        deviation: { label: "Deviation (ft)", decimals: 1 },
-        inflow: { label: "Inflow (cfs)", decimals: 0 },
-        outflow: { label: "Outflow (cfs)", decimals: 0 },
-      };
+    statusLine.textContent = `Loaded ${lakes.length} lakes`;
 
-      const cfg = metricConfig[metric] || metricConfig.percentUtil;
+    renderChart(lakes);
 
-      const usable = lakes
-        .filter(
-          (l) =>
-            l[metric] !== null &&
-            l[metric] !== undefined &&
-            !isNaN(l[metric])
-        )
-        .sort((a, b) => (a[metric] || 0) - (b[metric] || 0));
+  } catch (err) {
+    console.error(err);
+    statusLine.textContent = "Error loading data";
+    updatedLabel.textContent = "Updated: error";
+  }
+}
 
-      const labels = usable.map((l) => l.project);
-      const values = usable.map((l) => l[metric]);
+/* ------------------------------ Chart ------------------------------ */
+function renderChart(lakes) {
+  const ctx = document.getElementById("floodChart").getContext("2d");
+  if (floodChart) floodChart.destroy();
 
-      if (floodChart) {
-        floodChart.destroy();
-      }
+  const isBoat = document.body.classList.contains("boat-mode");
 
-      const isBoat = document.body.classList.contains("boat-mode");
-
-      const axisColor = isBoat ? "#020617" : "#E8F0FF";
-      const gridColor = isBoat
-        ? "rgba(15, 23, 42, 0.25)"
-        : "rgba(232, 240, 255, 0.2)";
-      const labelColor = isBoat ? "#020617" : "#FFFFFF";
-
-      floodChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: cfg.label,
-              data: values,
-              backgroundColor: isBoat ? "#0284c7" : "#3b82f6",
-              borderRadius: 4,
-              barThickness: 14,
-            },
-          ],
-        },
-        options: {
-          indexAxis: "y",
-          responsive: true,
-          maintainAspectRatio: false,
-          layout: {
-            padding: {
-              left: 24,
-              right: 12,
-              top: 8,
-              bottom: 8,
-            },
-          },
-          plugins: {
-            legend: {
-              labels: {
-                color: axisColor,
-                font: {
-                  size: 12,
-                  weight: "600",
-                },
-              },
-            },
-            tooltip: {
-              callbacks: {
-                label: function (ctx2) {
-                  const v = ctx2.parsed.x;
-                  return `${cfg.label}: ${formatNumber(v, cfg.decimals)}`;
-                },
-              },
-              titleColor: "#0B1020",
-              bodyColor: "#0B1020",
-              backgroundColor: "#E8F0FF",
-              borderColor: "#4FC3F7",
-              borderWidth: 1,
-            },
-          },
-          scales: {
-            x: {
-              ticks: {
-                color: axisColor,
-                font: {
-                  size: 11,
-                },
-              },
-              grid: {
-                color: gridColor,
-              },
-            },
-            y: {
-              ticks: {
-                color: labelColor,
-                font: {
-                  size: 12,
-                  weight: "600",
-                },
-              },
-              grid: {
-                color: gridColor.replace("0.2", "0.08"),
-              },
-            },
-          },
-        },
-      });
-    }
-
-    // Weather via ZIP -> zippopotam.us -> open-meteo
-    async function loadWeatherByZip(zip) {
-      const titleEl = document.getElementById("weather-title");
-      const metaEl = document.getElementById("weather-meta");
-      const mainEl = document.getElementById("weather-main");
-
-      try {
-        const geoResp = await fetch(
-          `https://api.zippopotam.us/us/${zip}`
-        );
-        if (!geoResp.ok) throw new Error("ZIP lookup failed");
-
-        const geo = await geoResp.json();
-        const place = geo.places[0];
-        const lat = Number(place.latitude);
-        const lon = Number(place.longitude);
-        const city = place["place name"];
-        const state = place["state abbreviation"];
-
-        titleEl.textContent = `Weather – ${city}, ${state}`;
-        metaEl.textContent = `Showing forecast for ${city}, ${state} (ZIP ${zip})`;
-
-        const meteoResp = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,wind_speed_10m&temperature_unit=fahrenheit&windspeed_unit=mph&forecast_days=1`
-        );
-        const meteo = await meteoResp.json();
-
-        const temps = meteo.hourly.temperature_2m || [];
-        const winds = meteo.hourly.wind_speed_10m || [];
-        const precip = meteo.hourly.precipitation || [];
-
-        const nowIndex = 0;
-        const nowT = temps[nowIndex] ?? null;
-        const nowW = winds[nowIndex] ?? null;
-
-        const high = temps.length
-          ? Math.max(...temps)
-          : null;
-        const low = temps.length
-          ? Math.min(...temps)
-          : null;
-        const rain24 =
-          precip.length &&
-          precip.reduce((a, b) => a + b, 0).toFixed(2);
-
-        mainEl.innerHTML = `
-          <div>Now: ${
-            nowT != null ? `${nowT.toFixed(0)}°F` : "—"
-          }, Wind: ${
-            nowW != null ? `${nowW.toFixed(0)} mph` : "—"
-          }</div>
-          <div>High: ${
-            high != null ? `${high.toFixed(0)}°F` : "—"
-          }, Low: ${
-            low != null ? `${low.toFixed(0)}°F` : "—"
-          }, Rain (24h): ${
-            rain24 != null ? `${rain24}"` : "—"
-          }</div>
-        `;
-      } catch (err) {
-        console.error(err);
-        titleEl.textContent = "Weather – Unknown";
-        metaEl.textContent =
-          "Could not load weather for that ZIP.";
-        mainEl.innerHTML =
-          "<div>Now: —°F, Wind: — mph</div><div>High: —°F, Low: —°F, Rain (24h): —\"</div>";
+  floodChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: lakes.map(l => l.project),
+      datasets: [{
+        data: lakes.map(l => l.percentUtil),
+        backgroundColor: isBoat ? "#0284c7" : "#3b82f6",
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: isBoat ? "#000" : "#fff" } },
+        y: { ticks: { color: isBoat ? "#000" : "#fff" } }
       }
     }
+  });
+}
 
-    // Boat mode toggle (saved to localStorage)
-    function setupBoatMode() {
-      const toggle = document.getElementById("boat-toggle");
-      const saved = localStorage.getItem(BOATMODE_KEY) === "true";
-      if (saved) {
-        toggle.checked = true;
-        document.body.classList.add("boat-mode");
-      }
+/* ------------------------------ Weather ------------------------------ */
+async function loadWeather(zip) {
+  try {
+    const geo = await fetch(`https://api.zippopotam.us/us/${zip}`).then(r=>r.json());
+    const p = geo.places[0];
 
-      toggle.addEventListener("change", () => {
-        const on = toggle.checked;
-        document.body.classList.toggle("boat-mode", on);
-        localStorage.setItem(BOATMODE_KEY, on ? "true" : "false");
+    document.getElementById("weather-title").textContent =
+      `Weather – ${p["place name"]}, ${p["state abbreviation"]}`;
 
-        if (window.lastLakeData) {
-          renderFloodChart(window.lastLakeData);
-        }
-      });
-    }
+  } catch {
+    document.getElementById("weather-title").textContent = "Weather – Unknown ZIP";
+  }
+}
 
-    function setupZipForm() {
-      const form = document.getElementById("zip-form");
-      const input = document.getElementById("zip-input");
+/* ------------------------------ Init ------------------------------ */
+document.addEventListener("DOMContentLoaded", () => {
+  showDisclaimerIfNeeded();
+  loadWeather("40351");
+  loadLakes();
 
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const zip = input.value.trim();
-        if (/^\d{5}$/.test(zip)) {
-          loadWeatherByZip(zip);
-        }
-      });
+  document.getElementById("boat-toggle").addEventListener("change", e => {
+    document.body.classList.toggle("boat-mode", e.target.checked);
+    if (window.lastLakeData) renderChart(window.lastLakeData);
+  });
 
-      // initial default
-      loadWeatherByZip(input.value.trim() || "40351");
-    }
+  document.getElementById("zip-form").addEventListener("submit", e => {
+    e.preventDefault();
+    loadWeather(document.getElementById("zip-input").value);
+  });
+});
+</script>
 
-    // Alerts for favorites (uses Notification API)
-    function setupAlertsToggle() {
-      const toggle = document.getElementById("alerts-toggle");
-      toggle.checked = getAlertsEnabled();
-
-      toggle.addEventListener("change", async () => {
-        if (toggle.checked) {
-          if (!("Notification" in window)) {
-            alert("Notifications are not supported in this browser.");
-            toggle.checked = false;
-            return;
-          }
-
-          let perm = Notification.permission;
-          if (perm !== "granted") {
-            perm = await Notification.requestPermission();
-          }
-
-          if (perm === "granted") {
-            setAlertsEnabled(true);
-          } else {
-            alert("Notifications were blocked. You can enable them in browser settings.");
-            toggle.checked = false;
-            setAlertsEnabled(false);
-          }
-        } else {
-          setAlertsEnabled(false);
-        }
-      });
-    }
-
-    function maybeNotifyFavorites(lakes) {
-      if (!getAlertsEnabled()) return;
-      if (!("Notification" in window)) return;
-      if (Notification.permission !== "granted") return;
-
-      const favorites = new Set(getFavorites());
-      if (!favorites.size) return;
-
-      const lastSent = getAlertsLast();
-      const now = Date.now();
-
-      for (const lake of lakes) {
-        if (!favorites.has(lake.project)) continue;
-        const delta = Number(lake.change24h || 0);
-        if (Math.abs(delta) < 2) continue; // threshold
-
-        const key = lake.project;
-        const lastTime = lastSent[key] || 0;
-
-        // only notify at most every 3 hours per lake
-        if (now - lastTime < 3 * 60 * 60 * 1000) continue;
-
-        const body = `Pool: ${formatNumber(lake.todayPool, 1)} ft, 24h Δ: ${formatNumber(delta, 1)} ft`;
-        new Notification(`Lake ${lake.project} changed ${formatNumber(delta, 1)} ft in 24h`, {
-          body,
-        });
-
-        lastSent[key] = now;
-      }
-
-      setAlertsLast(lastSent);
-    }
-
-    // Service worker registration (PWA)
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/service-worker.js")
-          .catch((err) =>
-            console.warn("Service worker registration failed:", err)
-          );
-      });
-    }
-
-    // Disclaimer popup
-    function setupDisclaimerModal() {
-      const backdrop = document.getElementById("disclaimer-modal-backdrop");
-      const btn = document.getElementById("disclaimer-accept-btn");
-
-      const accepted = localStorage.getItem(DISCLAIMER_KEY) === "true";
-      if (!accepted) {
-        backdrop.style.display = "flex";
-      }
-
-      btn.addEventListener("click", () => {
-        localStorage.setItem(DISCLAIMER_KEY, "true");
-        backdrop.style.display = "none";
-      });
-    }
-
-    function setupChartMetricSelector() {
-      const select = document.getElementById("chart-metric");
-      select.addEventListener("change", () => {
-        currentChartMetric = select.value;
-        if (window.lastLakeData) {
-          renderFloodChart(window.lastLakeData);
-        }
-      });
-    }
-
-    // Initialise
-    document.addEventListener("DOMContentLoaded", () => {
-      setupBoatMode();
-      setupZipForm();
-      setupAlertsToggle();
-      setupChartMetricSelector();
-      setupDisclaimerModal();
-      loadLakes();
-    });
-  </script>
 </body>
 </html>
