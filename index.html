@@ -46,7 +46,7 @@
 
     /* Boat (sun) mode */
     body.boat-mode {
-      --bg-main: #f1f5f9;
+      --bg-main: #f1f59;
       --bg-card: #ffffff;
       --bg-card-soft: #f8fafc;
       --border-subtle: #cbd5f5;
@@ -434,7 +434,7 @@
             <button type="submit">Go</button>
           </form>
           <label class="boat-toggle">
-            <input type="checkbox" id="boat-toggle" />
+            <input type="checkbox" id="boatMode" />
             <span>Boat mode (bright)</span>
           </label>
         </div>
@@ -745,9 +745,9 @@
       }
     }
 
-    // Boat mode toggle
+    // Boat mode toggle (matches snippet: document.getElementById("boatMode"))
     function setupBoatMode() {
-      const boatToggle = document.getElementById("boat-toggle");
+      const boatToggle = document.getElementById("boatMode");
 
       boatToggle.addEventListener("change", () => {
         const page = document.body;
