@@ -234,6 +234,13 @@
       gap: 10px;
     }
 
+    @media (min-width: 980px) {
+      .main-grid {
+        display: grid;
+        grid-template-columns: 2fr;
+      }
+    }
+
     .table-wrapper {
       overflow: auto;
       max-height: calc(100vh - 260px);
@@ -283,14 +290,41 @@
       color: var(--danger);
     }
 
+    .fav-cell {
+      text-align: center;
+      width: 30px;
+    }
+
+    .fav-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      color: #64748b;
+    }
+
+    .fav-btn.favorited {
+      color: #fbbf24;
+    }
+
     .chart-card {
       margin-top: 10px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
     }
 
     .chart-title {
       font-size: 0.9rem;
       font-weight: 600;
-      margin-bottom: 4px;
     }
 
     .chart-subtitle {
@@ -311,7 +345,7 @@
       }
     }
 
-    /* Footer disclaimer */
+    /* Disclaimer footer */
     .disclaimer-footer {
       width: 100%;
       text-align: center;
@@ -320,66 +354,69 @@
       font-size: 0.8rem;
       opacity: 0.7;
       color: #ccc;
-      box-sizing: border-box;
     }
 
-    body.boat-mode .disclaimer-footer {
-      color: #111827;
+    .boat-mode .disclaimer-footer {
+      color: #000;
+      opacity: 0.7;
     }
 
-    /* POPUP DISCLAIMER (first visit) */
-    .disclaimer-modal-overlay {
+    /* Disclaimer modal */
+    .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.7);
+      background: rgba(15, 23, 42, 0.75);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 9999;
     }
 
-    .disclaimer-modal {
+    .modal {
       background: var(--bg-card);
       border-radius: 16px;
+      padding: 16px 18px;
+      max-width: 420px;
+      margin: 0 16px;
       border: 1px solid var(--border-subtle);
-      max-width: 480px;
-      width: calc(100% - 32px);
-      padding: 16px 18px 14px;
-      box-sizing: border-box;
-      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
     }
 
-    .disclaimer-modal h3 {
+    .modal h2 {
       margin: 0 0 8px;
       font-size: 1rem;
     }
 
-    .disclaimer-modal p {
-      margin: 0 0 12px;
+    .modal p {
       font-size: 0.85rem;
       color: var(--text-muted);
+      margin: 0 0 10px;
     }
 
-    .disclaimer-modal button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .modal button {
+      margin-top: 6px;
       padding: 6px 14px;
       border-radius: 999px;
       border: none;
       background: var(--accent);
       color: #fff;
-      font-size: 0.85rem;
       font-weight: 600;
+      font-size: 0.85rem;
       cursor: pointer;
     }
 
-    .disclaimer-modal button:hover {
-      filter: brightness(1.05);
+    .alert-toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      cursor: pointer;
     }
 
-    .hidden {
-      display: none !important;
+    .alert-toggle-label input {
+      transform: scale(1.1);
+      accent-color: var(--accent);
     }
   </style>
 </head>
@@ -389,9 +426,9 @@
     <header class="app-header">
       <div class="title-row">
         <div>
-          <h1>KY Lake Levels                                                 -D.Williams</h1>
+          <h1>KY Lake Levels</h1>
           <div class="subtitle">
-            Live levels from your favorite KY lakes     
+            Live levels from your favorite KY lakes
           </div>
         </div>
         <div class="status-pill">
@@ -406,12 +443,11 @@
 
     <div class="top-row">
       <!-- Ad Card -->
-      <section class="card card-soft" style="margin-bottom: 10px; padding: 6px 10px; max-width: 260px;">
+      <section class="card card-soft" style="margin-bottom: 10px; padding: 6px 10px;">
         <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">
           Sponsored
         </div>
         <div style="width: 100%; min-height: 60px; display: flex; justify-content: center; align-items: center;">
-          <!-- Google AdSense ad slot -->
           <ins class="adsbygoogle"
                style="display:block;width:100%;"
                data-ad-client="ca-pub-3651423030244109"
@@ -424,7 +460,7 @@
         </div>
       </section>
 
-      <!-- Weather Card -->
+      <!-- Weather + toggles Card -->
       <section class="card card-soft" style="flex: 1 1 260px">
         <h2 id="weather-title">Weather – Morehead, KY</h2>
         <div class="weather-meta" id="weather-meta">
@@ -441,49 +477,70 @@
             <input id="zip-input" type="text" maxlength="5" pattern="\d{5}" value="40351" />
             <button type="submit">Go</button>
           </form>
-          <label class="boat-toggle">
-            <input type="checkbox" id="boat-toggle" />
-            <span>Boat mode (bright)</span>
-          </label>
+          <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+            <label class="boat-toggle">
+              <input type="checkbox" id="boat-toggle" />
+              <span>Boat mode (bright)</span>
+            </label>
+            <label class="alert-toggle-label">
+              <input type="checkbox" id="alerts-toggle" />
+              <span>Alerts for favorites (24h Δ ≥ 2 ft)</span>
+            </label>
+          </div>
         </div>
       </section>
     </div>
 
     <main class="main-grid">
-      <!-- Lake table + chart -->
+      <!-- Lake table -->
       <section class="card">
         <div class="table-wrapper">
           <table>
             <thead>
-            <tr>
-              <th>Basin</th>
-              <th>Project</th>
-              <th class="num">Pool</th>
-              <th class="num">Dev.</th>
-              <th class="num">24h Δ</th>
-              <th class="num">Rain</th>
-              <th class="num">Inflow</th>
-              <th class="num">Outflow</th>
-              <th class="num">% Util</th>
-            </tr>
+              <tr>
+                <th style="width:30px;">★</th>
+                <th>Basin</th>
+                <th>Project</th>
+                <th class="num">Pool</th>
+                <th class="num">Dev.</th>
+                <th class="num">24h Δ</th>
+                <th class="num">Rain</th>
+                <th class="num">Inflow</th>
+                <th class="num">Outflow</th>
+                <th class="num">% Util</th>
+              </tr>
             </thead>
             <tbody id="lakes-body">
-            <tr>
-              <td colspan="9" style="padding: 10px 8px; font-size: 0.8rem">
-                Loading live lake data…
-              </td>
-            </tr>
+              <tr>
+                <td colspan="10" style="padding: 10px 8px; font-size: 0.8rem">
+                  Loading live lake data…
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
 
         <!-- Chart -->
         <section class="chart-card">
-          <div class="chart-title">
-            Flood Pool Utilization (% of flood storage used)
+          <div class="chart-header">
+            <div class="chart-title">
+              Flood Pool Utilization (% of flood storage used)
+            </div>
+            <div>
+              <label style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;">
+                Chart metric:
+              </label>
+              <select id="chart-metric" style="font-size:0.75rem; padding:2px 6px; border-radius:999px; border:1px solid var(--border-subtle); background:var(--bg-main); color:var(--text-main);">
+                <option value="percentUtil">% Utilization</option>
+                <option value="todayPool">Pool Elevation</option>
+                <option value="deviation">Deviation</option>
+                <option value="inflow">Inflow</option>
+                <option value="outflow">Outflow</option>
+              </select>
+            </div>
           </div>
           <div class="chart-subtitle">
-            Based on current pool relative to flood-storage pool.
+            Based on current pool and selected metric.
           </div>
           <div class="chart-container">
             <canvas id="floodChart"></canvas>
@@ -492,25 +549,28 @@
       </section>
     </main>
 
-    <!-- Footer Disclaimer (always visible) -->
+    <!-- Disclaimer footer -->
     <footer class="disclaimer-footer">
       <p>
-        <strong>Disclaimer:</strong>
-        This application is not affiliated with, endorsed by, or sponsored by the U.S. Army Corps of Engineers.
-        All lake data is publicly available from the USACE Water Management website. Accuracy is not guaranteed.
+        <strong>Disclaimer:</strong> This application is not affiliated with, endorsed by, or sponsored by 
+        the U.S. Army Corps of Engineers. All lake data is publicly available from the USACE Water Management website. 
+        Accuracy is not guaranteed.
       </p>
     </footer>
   </div>
 
-  <!-- First-visit Disclaimer Modal -->
-  <div id="disclaimer-overlay" class="disclaimer-modal-overlay hidden">
-    <div class="disclaimer-modal">
-      <h3>Disclaimer</h3>
+  <!-- Disclaimer modal (shows once per device) -->
+  <div id="disclaimer-modal-backdrop" class="modal-backdrop" style="display:none;">
+    <div class="modal">
+      <h2>Important Disclaimer</h2>
       <p>
         This application is not affiliated with, endorsed by, or sponsored by the U.S. Army Corps of Engineers.
-        All lake data is publicly available from the USACE Water Management website. Accuracy is not guaranteed.
+        All lake data is publicly available from the USACE Water Management website and accuracy is not guaranteed.
       </p>
-      <button id="disclaimer-accept">OK, I Understand</button>
+      <p>
+        By using this app, you agree that you are responsible for your own safety and decisions on the water.
+      </p>
+      <button id="disclaimer-accept-btn">I Understand</button>
     </div>
   </div>
 
@@ -520,6 +580,48 @@
 
     let floodChart = null;
     window.lastLakeData = null; // store last lakes for re-draw
+    let currentChartMetric = "percentUtil";
+
+    // Favorites & alerts
+    const FAVORITES_KEY = "kyLakeFavorites";
+    const LAST_DATA_KEY = "kyLakeLastData";
+    const ALERTS_ENABLED_KEY = "kyLakeAlertsEnabled";
+    const ALERTS_LAST_KEY = "kyLakeAlertsLast";
+    const DISCLAIMER_KEY = "kyLakeDisclaimerAccepted";
+
+    function getFavorites() {
+      try {
+        const raw = localStorage.getItem(FAVORITES_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveFavorites(list) {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(list));
+    }
+
+    function getAlertsEnabled() {
+      return localStorage.getItem(ALERTS_ENABLED_KEY) === "true";
+    }
+
+    function setAlertsEnabled(v) {
+      localStorage.setItem(ALERTS_ENABLED_KEY, v ? "true" : "false");
+    }
+
+    function getAlertsLast() {
+      try {
+        const raw = localStorage.getItem(ALERTS_LAST_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function setAlertsLast(obj) {
+      localStorage.setItem(ALERTS_LAST_KEY, JSON.stringify(obj));
+    }
 
     function formatNumber(value, decimals = 1) {
       if (value === null || value === undefined || isNaN(value)) return "—";
@@ -532,6 +634,30 @@
       return "";
     }
 
+    function cacheLakeData(data) {
+      try {
+        localStorage.setItem(
+          LAST_DATA_KEY,
+          JSON.stringify({
+            timestamp: data.timestamp || new Date().toISOString(),
+            lakes: data.lakes || [],
+          })
+        );
+      } catch (e) {
+        console.warn("Unable to cache lake data", e);
+      }
+    }
+
+    function loadCachedLakeData() {
+      try {
+        const raw = localStorage.getItem(LAST_DATA_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    }
+
     async function loadLakes() {
       const tbody = document.getElementById("lakes-body");
       const updatedLabel = document.getElementById("updated-label");
@@ -539,81 +665,144 @@
 
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" style="padding: 10px 8px; font-size:0.8rem">
+          <td colspan="10" style="padding: 10px 8px; font-size:0.8rem">
             Loading live lake data…
           </td>
         </tr>`;
 
+      let data = null;
+      let fromCache = false;
+
       try {
         const resp = await fetch(`${BACKEND_URL}/lakes`, { cache: "no-store" });
-        const data = await resp.json();
+        data = await resp.json();
 
         if (data.error) {
           throw new Error(data.message || "Backend error");
         }
 
-        const lakes = data.lakes || [];
-        window.lastLakeData = lakes; // save for boat mode re-draw
-
-        // sort by basin then project
-        lakes.sort((a, b) => {
-          const ba = (a.basin || "").localeCompare(b.basin || "");
-          if (ba !== 0) return ba;
-          return (a.project || "").localeCompare(b.project || "");
-        });
-
-        tbody.innerHTML = "";
-        for (const lake of lakes) {
-          const tr = document.createElement("tr");
-
-          const devClass = classifyDelta(lake.deviation);
-          const d24Class = classifyDelta(lake.change24h);
-
-          tr.innerHTML = `
-            <td>${lake.basin || "—"}</td>
-            <td>${lake.project || "—"}</td>
-            <td class="num">${formatNumber(lake.todayPool, 1)}</td>
-            <td class="num ${devClass}">${formatNumber(lake.deviation, 1)}</td>
-            <td class="num ${d24Class}">${formatNumber(lake.change24h, 1)}</td>
-            <td class="num">${formatNumber(lake.precip24h, 2)}</td>
-            <td class="num">${formatNumber(lake.inflow, 0)}</td>
-            <td class="num">${formatNumber(lake.outflow, 0)}</td>
-            <td class="num">${formatNumber(lake.percentUtil, 2)}</td>
-          `;
-
-          tbody.appendChild(tr);
+        cacheLakeData(data);
+      } catch (err) {
+        console.error("Live fetch failed, trying cache:", err);
+        const cached = loadCachedLakeData();
+        if (cached && cached.lakes && cached.lakes.length) {
+          data = cached;
+          fromCache = true;
+        } else {
+          updatedLabel.textContent = "Updated: error";
+          statusLine.textContent =
+            "Could not reach backend — is it running?";
+          statusLine.classList.remove("ok");
+          statusLine.classList.add("error");
+          return;
         }
+      }
 
-        const ts = data.timestamp ? new Date(data.timestamp) : new Date();
-        updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
+      const lakes = data.lakes || [];
+      window.lastLakeData = lakes; // save for boat mode / chart re-draw
+
+      const favorites = getFavorites();
+      const favSet = new Set(favorites);
+
+      // sort: favorites first, then basin, then project
+      lakes.sort((a, b) => {
+        const af = favSet.has(a.project);
+        const bf = favSet.has(b.project);
+        if (af !== bf) return af ? -1 : 1;
+
+        const ba = (a.basin || "").localeCompare(b.basin || "");
+        if (ba !== 0) return ba;
+        return (a.project || "").localeCompare(b.project || "");
+      });
+
+      tbody.innerHTML = "";
+      for (const lake of lakes) {
+        const tr = document.createElement("tr");
+
+        const devClass = classifyDelta(lake.deviation);
+        const d24Class = classifyDelta(lake.change24h);
+        const isFav = favSet.has(lake.project);
+
+        tr.innerHTML = `
+          <td class="fav-cell">
+            <button class="fav-btn ${isFav ? "favorited" : ""}"
+                    data-project="${lake.project}">
+              ${isFav ? "★" : "☆"}
+            </button>
+          </td>
+          <td>${lake.basin || "—"}</td>
+          <td>${lake.project || "—"}</td>
+          <td class="num">${formatNumber(lake.todayPool, 1)}</td>
+          <td class="num ${devClass}">${formatNumber(lake.deviation, 1)}</td>
+          <td class="num ${d24Class}">${formatNumber(lake.change24h, 1)}</td>
+          <td class="num">${formatNumber(lake.precip24h, 2)}</td>
+          <td class="num">${formatNumber(lake.inflow, 0)}</td>
+          <td class="num">${formatNumber(lake.outflow, 0)}</td>
+          <td class="num">${formatNumber(lake.percentUtil, 2)}</td>
+        `;
+
+        tbody.appendChild(tr);
+      }
+
+      // Hook up favorite buttons
+      tbody.querySelectorAll(".fav-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const project = btn.getAttribute("data-project");
+          const favs = new Set(getFavorites());
+          if (favs.has(project)) {
+            favs.delete(project);
+          } else {
+            favs.add(project);
+          }
+          saveFavorites(Array.from(favs));
+          loadLakes(); // re-load to reorder & update icons
+        });
+      });
+
+      const ts = data.timestamp
+        ? new Date(data.timestamp)
+        : new Date();
+      updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
+      if (fromCache) {
+        statusLine.textContent = `Using cached data (${lakes.length} lakes) – offline`;
+        statusLine.classList.remove("ok");
+        statusLine.classList.add("error");
+      } else {
         statusLine.textContent = `Loaded ${lakes.length} lakes`;
         statusLine.classList.remove("error");
         statusLine.classList.add("ok");
-
-        renderFloodChart(lakes);
-      } catch (err) {
-        console.error(err);
-        updatedLabel.textContent = "Updated: error";
-        statusLine.textContent = "Could not reach backend — is it running?";
-        statusLine.classList.remove("ok");
-        statusLine.classList.add("error");
       }
+
+      renderFloodChart(lakes);
+      maybeNotifyFavorites(lakes);
     }
 
     function renderFloodChart(lakes) {
       const ctx = document.getElementById("floodChart").getContext("2d");
 
+      const metric = currentChartMetric;
+
+      const metricConfig = {
+        percentUtil: { label: "% Utilized", decimals: 2 },
+        todayPool: { label: "Pool Elevation (ft)", decimals: 1 },
+        deviation: { label: "Deviation (ft)", decimals: 1 },
+        inflow: { label: "Inflow (cfs)", decimals: 0 },
+        outflow: { label: "Outflow (cfs)", decimals: 0 },
+      };
+
+      const cfg = metricConfig[metric] || metricConfig.percentUtil;
+
       const usable = lakes
         .filter(
           (l) =>
-            l.percentUtil !== null &&
-            l.percentUtil !== undefined &&
-            !isNaN(l.percentUtil)
+            l[metric] !== null &&
+            l[metric] !== undefined &&
+            !isNaN(l[metric])
         )
-        .sort((a, b) => (a.percentUtil || 0) - (b.percentUtil || 0));
+        .sort((a, b) => (a[metric] || 0) - (b[metric] || 0));
 
       const labels = usable.map((l) => l.project);
-      const values = usable.map((l) => l.percentUtil);
+      const values = usable.map((l) => l[metric]);
 
       if (floodChart) {
         floodChart.destroy();
@@ -634,7 +823,7 @@
           labels,
           datasets: [
             {
-              label: "% Utilized",
+              label: cfg.label,
               data: values,
               backgroundColor: isBoat ? "#0284c7" : "#3b82f6",
               borderRadius: 4,
@@ -665,6 +854,12 @@
               },
             },
             tooltip: {
+              callbacks: {
+                label: function (ctx2) {
+                  const v = ctx2.parsed.x;
+                  return `${cfg.label}: ${formatNumber(v, cfg.decimals)}`;
+                },
+              },
               titleColor: "#0B1020",
               bodyColor: "#0B1020",
               backgroundColor: "#E8F0FF",
@@ -708,7 +903,9 @@
       const mainEl = document.getElementById("weather-main");
 
       try {
-        const geoResp = await fetch(`https://api.zippopotam.us/us/${zip}`);
+        const geoResp = await fetch(
+          `https://api.zippopotam.us/us/${zip}`
+        );
         if (!geoResp.ok) throw new Error("ZIP lookup failed");
 
         const geo = await geoResp.json();
@@ -734,10 +931,15 @@
         const nowT = temps[nowIndex] ?? null;
         const nowW = winds[nowIndex] ?? null;
 
-        const high = temps.length ? Math.max(...temps) : null;
-        const low = temps.length ? Math.min(...temps) : null;
+        const high = temps.length
+          ? Math.max(...temps)
+          : null;
+        const low = temps.length
+          ? Math.min(...temps)
+          : null;
         const rain24 =
-          precip.length && precip.reduce((a, b) => a + b, 0).toFixed(2);
+          precip.length &&
+          precip.reduce((a, b) => a + b, 0).toFixed(2);
 
         mainEl.innerHTML = `
           <div>Now: ${
@@ -756,9 +958,10 @@
       } catch (err) {
         console.error(err);
         titleEl.textContent = "Weather – Unknown";
-        metaEl.textContent = "Could not load weather for that ZIP.";
+        metaEl.textContent =
+          "Could not load weather for that ZIP.";
         mainEl.innerHTML =
-          '<div>Now: —°F, Wind: — mph</div><div>High: —°F, Low: —°F, Rain (24h): —"</div>';
+          "<div>Now: —°F, Wind: — mph</div><div>High: —°F, Low: —°F, Rain (24h): —\"</div>";
       }
     }
 
@@ -791,20 +994,68 @@
       loadWeatherByZip(input.value.trim() || "40351");
     }
 
-    // First-visit disclaimer popup
-    function setupDisclaimerPopup() {
-      const overlay = document.getElementById("disclaimer-overlay");
-      const btn = document.getElementById("disclaimer-accept");
-      const SEEN_KEY = "kyLakeDisclaimerSeen_v1";
+    // Alerts for favorites (uses Notification API)
+    function setupAlertsToggle() {
+      const toggle = document.getElementById("alerts-toggle");
+      toggle.checked = getAlertsEnabled();
 
-      if (!localStorage.getItem(SEEN_KEY)) {
-        overlay.classList.remove("hidden");
+      toggle.addEventListener("change", async () => {
+        if (toggle.checked) {
+          if (!("Notification" in window)) {
+            alert("Notifications are not supported in this browser.");
+            toggle.checked = false;
+            return;
+          }
+
+          let perm = Notification.permission;
+          if (perm !== "granted") {
+            perm = await Notification.requestPermission();
+          }
+
+          if (perm === "granted") {
+            setAlertsEnabled(true);
+          } else {
+            alert("Notifications were blocked. You can enable them in browser settings.");
+            toggle.checked = false;
+            setAlertsEnabled(false);
+          }
+        } else {
+          setAlertsEnabled(false);
+        }
+      });
+    }
+
+    function maybeNotifyFavorites(lakes) {
+      if (!getAlertsEnabled()) return;
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+
+      const favorites = new Set(getFavorites());
+      if (!favorites.size) return;
+
+      const lastSent = getAlertsLast();
+      const now = Date.now();
+
+      for (const lake of lakes) {
+        if (!favorites.has(lake.project)) continue;
+        const delta = Number(lake.change24h || 0);
+        if (Math.abs(delta) < 2) continue; // threshold
+
+        const key = lake.project;
+        const lastTime = lastSent[key] || 0;
+
+        // only notify at most every 3 hours per lake
+        if (now - lastTime < 3 * 60 * 60 * 1000) continue;
+
+        const body = `Pool: ${formatNumber(lake.todayPool, 1)} ft, 24h Δ: ${formatNumber(delta, 1)} ft`;
+        new Notification(`Lake ${lake.project} changed ${formatNumber(delta, 1)} ft in 24h`, {
+          body,
+        });
+
+        lastSent[key] = now;
       }
 
-      btn.addEventListener("click", () => {
-        localStorage.setItem(SEEN_KEY, "true");
-        overlay.classList.add("hidden");
-      });
+      setAlertsLast(lastSent);
     }
 
     // Service worker registration (PWA)
@@ -818,17 +1069,41 @@
       });
     }
 
+    // Disclaimer popup
+    function setupDisclaimerModal() {
+      const backdrop = document.getElementById("disclaimer-modal-backdrop");
+      const btn = document.getElementById("disclaimer-accept-btn");
+
+      const accepted = localStorage.getItem(DISCLAIMER_KEY) === "true";
+      if (!accepted) {
+        backdrop.style.display = "flex";
+      }
+
+      btn.addEventListener("click", () => {
+        localStorage.setItem(DISCLAIMER_KEY, "true");
+        backdrop.style.display = "none";
+      });
+    }
+
+    function setupChartMetricSelector() {
+      const select = document.getElementById("chart-metric");
+      select.addEventListener("change", () => {
+        currentChartMetric = select.value;
+        if (window.lastLakeData) {
+          renderFloodChart(window.lastLakeData);
+        }
+      });
+    }
+
     // Initialise
     document.addEventListener("DOMContentLoaded", () => {
       setupBoatMode();
       setupZipForm();
-      setupDisclaimerPopup();
+      setupAlertsToggle();
+      setupChartMetricSelector();
+      setupDisclaimerModal();
       loadLakes();
     });
   </script>
 </body>
 </html>
-
-
-
-
