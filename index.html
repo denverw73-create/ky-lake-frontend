@@ -680,6 +680,17 @@
         return null;
       }
     }
+function parseBackendTimestamp(tsStr) {
+  if (!tsStr) return new Date();
+
+  // If it already has a timezone (Z or +hh:mm / -hh:mm), just use it
+  if (/Z$|[+-]\d{2}:?\d{2}$/.test(tsStr)) {
+    return new Date(tsStr);
+  }
+
+  // If it's "naive" (no timezone), treat it as UTC
+  return new Date(tsStr + "Z");
+}
 
     async function loadLakes() {
       const tbody = document.getElementById("lakes-body");
@@ -782,10 +793,13 @@
         });
       });
 
-      const ts = data.timestamp
-        ? new Date(data.timestamp)
-        : new Date();
-      updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
+const ts = parseBackendTimestamp(data.timestamp);
+
+updatedLabel.textContent = `Updated: ${ts.toLocaleString(undefined, {
+  dateStyle: "short",
+  timeStyle: "short",
+})}`;
+
       if (fromCache) {
         statusLine.textContent = `Using cached data (${lakes.length} lakes) – offline`;
         statusLine.classList.remove("ok");
@@ -1136,3 +1150,4 @@
   </script>
 </body>
 </html>
+
