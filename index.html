@@ -793,12 +793,8 @@ function parseBackendTimestamp(tsStr) {
         });
       });
 
-const ts = parseBackendTimestamp(data.timestamp);
+Updated: Dec 10, 2025
 
-updatedLabel.textContent = `Updated: ${ts.toLocaleString(undefined, {
-  dateStyle: "short",
-  timeStyle: "short",
-})}`;
 
       if (fromCache) {
         statusLine.textContent = `Using cached data (${lakes.length} lakes) – offline`;
@@ -1150,4 +1146,5 @@ updatedLabel.textContent = `Updated: ${ts.toLocaleString(undefined, {
   </script>
 </body>
 </html>
+
 
