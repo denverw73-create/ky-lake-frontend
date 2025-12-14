@@ -1,289 +1,797 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>KY Lake Levels</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#021326">
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/icons/ky-lake-192.png">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#021326" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="icon" href="/icons/ky-lake-192.png" />
 
-<!-- Chart -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- Map -->
+<!-- Leaflet (map) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
 :root{
---bg:#020617;--card:#101827;--soft:#111827;--border:#1f2937;
---text:#e5edff;--muted:#9ca3af;--accent:#3b82f6;
---good:#4ade80;--bad:#f87171;
+  --bg-main:#020617;
+  --bg-card:#101827;
+  --bg-soft:#111827;
+  --border:#1f2937;
+  --text:#e5edff;
+  --muted:#9ca3af;
+  --accent:#3b82f6;
+  --good:#4ade80;
+  --bad:#f87171;
+  --chip:#0b1220;
 }
+
 body{
-margin:0;font-family:system-ui;
-background:radial-gradient(circle at top,#0b1120,#020617);
-color:var(--text);
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:radial-gradient(circle at top,#0b1120 0,#020617 60%);
+  color:var(--text);
 }
+
 body.day-mode{
---bg:#f1f5f9;--card:#fff;--soft:#f8fafc;--border:#cbd5f5;
---text:#020617;--muted:#4b5563;
-background:#e2f3ff;
+  --bg-main:#f1f5f9;
+  --bg-card:#ffffff;
+  --bg-soft:#f8fafc;
+  --border:#cbd5f5;
+  --text:#020617;
+  --muted:#4b5563;
+  --accent:#0284c7;
+  --chip:#eaf4ff;
+  background:#e2f3ff;
 }
-.app{max-width:1200px;margin:auto;padding:12px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px;margin-bottom:10px}
-.soft{background:var(--soft)}
-h1{margin:0;font-size:1.4rem}
-h2{margin:0 0 6px;font-size:.95rem}
-.sub{font-size:.8rem;color:var(--muted)}
+
+.app{
+  max-width:1200px;
+  margin:0 auto;
+  padding:12px;
+  box-sizing:border-box;
+}
+
+.card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:12px 14px;
+  box-shadow:0 14px 30px rgba(15,23,42,.35);
+  margin-bottom:10px;
+}
+
+.soft{ background:var(--bg-soft); }
+
+h1{ margin:0; font-size:1.35rem; }
+h2{ margin:0 0 6px; font-size:.95rem; }
+.sub{ color:var(--muted); font-size:.82rem; }
 
 .top-grid{
-display:grid;gap:12px;
-grid-template-areas:"s""w""m";
+  display:grid;
+  gap:12px;
+  grid-template-areas:"s" "w" "m";
 }
 @media(min-width:980px){
-.top-grid{
-grid-template-columns:1fr 1fr;
-grid-template-areas:"s w""m m";
+  .top-grid{
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:"s w" "m m";
+  }
 }
+.area-s{ grid-area:s; }
+.area-w{ grid-area:w; }
+.area-m{ grid-area:m; }
+
+.row-flex{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
 }
-.area-s{grid-area:s}
-.area-w{grid-area:w}
-.area-m{grid-area:m}
 
 .btn{
-padding:6px 12px;border-radius:999px;
-border:1px solid var(--border);
-background:var(--bg);color:var(--text);
-font-size:.75rem;font-weight:700;cursor:pointer;
+  padding:6px 12px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--bg-main);
+  color:var(--text);
+  font-size:.75rem;
+  font-weight:800;
+  cursor:pointer;
 }
-.btn.primary{background:var(--accent);border:none;color:#fff}
+.btn.primary{
+  background:var(--accent);
+  border:none;
+  color:#fff;
+}
+.btn:hover{ filter:brightness(1.05); }
 
 input,select{
-border-radius:999px;padding:6px 10px;
-background:var(--bg);color:var(--text);
-border:1px solid var(--border);font-size:.75rem
+  border-radius:999px;
+  padding:6px 10px;
+  background:var(--bg-main);
+  color:var(--text);
+  border:1px solid var(--border);
+  font-size:.75rem;
+  outline:none;
 }
 
-table{width:100%;border-collapse:collapse;font-size:.8rem}
-th,td{padding:6px 8px;border-bottom:1px solid rgba(148,163,184,.2)}
-th{font-size:.7rem;color:var(--muted)}
-.num{text-align:right}
-.pos{color:var(--good)}
-.neg{color:var(--bad)}
-.fav{background:none;border:none;font-size:1rem;cursor:pointer;color:#64748b}
-.fav.on{color:#fbbf24}
-.row{cursor:pointer}
-#map{height:340px;border-radius:14px;border:1px solid var(--border)}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.82rem;
+}
+th,td{
+  padding:8px 8px;
+  border-bottom:1px solid rgba(148,163,184,.18);
+  white-space:nowrap;
+}
+th{
+  font-size:.72rem;
+  color:var(--muted);
+  font-weight:800;
+}
+.num{ text-align:right; font-variant-numeric:tabular-nums; }
+.pos{ color:var(--good); }
+.neg{ color:var(--bad); }
+
+.table-wrap{ overflow:auto; }
+
+#map{
+  height:340px;
+  border-radius:14px;
+  border:1px solid var(--border);
+}
 
 .modal-bg{
-position:fixed;inset:0;background:rgba(0,0,0,.7);
-display:none;align-items:center;justify-content:center;z-index:9999
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
 }
 .modal{
-background:var(--card);border-radius:18px;border:1px solid var(--border);
-width:100%;max-width:640px;padding:14px
+  width:100%;
+  max-width:680px;
+  margin:0 14px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px 16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.45);
 }
-.footer{text-align:center;font-size:.75rem;opacity:.7;margin:30px 0}
+.modal h3{ margin:10px 0 6px; }
+.kv{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.kv .box{
+  background:var(--bg-soft);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:10px;
+}
+.kv .box .label{ color:var(--muted); font-size:.72rem; font-weight:800; }
+.kv .box .val{ font-size:1.05rem; font-weight:900; margin-top:4px; }
+
+.chart-wrap{
+  height:360px;
+  margin-top:10px;
+}
+hr.dash{
+  border:none;
+  border-top:1px dashed rgba(148,163,184,.25);
+  margin:14px 0 10px;
+}
+
+/* Fish limits panel */
+.pill-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:10px 0 8px;
+}
+.pill{
+  border:1px solid var(--border);
+  background:var(--chip);
+  color:var(--text);
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:.75rem;
+  font-weight:900;
+  cursor:pointer;
+}
+.pill.active{
+  background:var(--accent);
+  border-color:transparent;
+  color:#fff;
+}
+
+.fish-card{
+  background:var(--bg-soft);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:12px;
+}
+.fish-title{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.fish-title strong{ font-size:1rem; }
+.fish-meta{ color:var(--muted); font-size:.78rem; }
+
+.metric-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:10px;
+}
+@media(max-width:720px){
+  .metric-grid{ grid-template-columns:1fr; }
+}
+.metric{
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:10px;
+  background:var(--bg-card);
+}
+.metric .k{ color:var(--muted); font-size:.72rem; font-weight:900; }
+.metric .v{ font-size:1.15rem; font-weight:1000; margin-top:4px; }
+.note{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:.78rem;
+  line-height:1.35;
+}
+
+.footer{
+  text-align:center;
+  font-size:.78rem;
+  opacity:.75;
+  margin:26px 0 12px;
+}
 </style>
 </head>
 
 <body>
 <div class="app">
 
-<div class="card">
-<h1>KY Lake Levels</h1>
-<div class="sub">Live lake levels, charts, maps & regs</div>
-</div>
+  <div class="card">
+    <div class="row-flex">
+      <div>
+        <h1>KY Lake Levels</h1>
+        <div class="sub">Live lake levels • charts • map • regs</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:900;font-size:.8rem" id="updatedLabel">Updated: —</div>
+        <div class="sub" id="statusLine">Waiting for data…</div>
+      </div>
+    </div>
+  </div>
 
-<div class="top-grid">
+  <div class="top-grid">
 
-<!-- Sponsor -->
-<div class="card soft area-s">
-<div class="sub">Sponsored</div>
-<strong>Sponsor spot available</strong>
-<div class="sub">Reach KY boaters & anglers</div>
-</div>
+    <!-- Sponsor (Area 1) -->
+    <div class="card soft area-s">
+      <div class="sub">Sponsored</div>
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+        <div>
+          <div style="font-weight:1000">Your local sponsor here</div>
+          <div class="sub">Email: you@example.com • (555) 555-5555</div>
+        </div>
+        <button class="btn primary" onclick="alert('Swap this button for your sponsor link/call-to-action')">Sponsor CTA</button>
+      </div>
+    </div>
 
-<!-- Weather -->
-<div class="card soft area-w">
-<h2 id="weatherTitle">Weather</h2>
-<div id="weather">Loading…</div>
+    <!-- Weather (Area 2) -->
+    <div class="card soft area-w">
+      <div class="row-flex">
+        <div>
+          <h2 id="weatherTitle">Weather</h2>
+          <div class="sub" id="weatherMeta">Default ZIP shown — change anytime.</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:900">
+          <input type="checkbox" id="dayToggle" />
+          Day mode
+        </label>
+      </div>
 
-<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;gap:10px;flex-wrap:wrap">
-<form onsubmit="event.preventDefault();loadWeather()">
-ZIP <input id="zip" value="40351" maxlength="5">
-<button class="btn primary">Go</button>
-</form>
+      <div id="weatherMain" style="margin-top:8px;font-weight:900">Loading…</div>
 
-<div style="text-align:right">
-<label><input type="checkbox" id="dayToggle"> Day mode</label>
-<div class="sub">Off = Night mode</div>
-</div>
-</div>
-</div>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <form id="zipForm" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="sub" style="font-weight:900">ZIP</span>
+          <input id="zipInput" maxlength="5" value="40351" inputmode="numeric" pattern="\\d{5}">
+          <button class="btn primary" type="submit">Go</button>
+        </form>
+        <div class="sub">Off = Night mode</div>
+      </div>
+    </div>
 
-<!-- Map -->
-<div class="card soft area-m">
-<div style="display:flex;justify-content:space-between;align-items:center">
-<h2>Map & GPS</h2>
-<div>
-<button class="btn primary" onclick="startGPS()">Use GPS</button>
-<button class="btn" onclick="stopGPS()">Stop</button>
-<button class="btn" onclick="centerKY()">Center KY</button>
-</div>
-</div>
-<div id="map"></div>
-<div class="sub" id="gpsStatus">GPS idle</div>
-</div>
+    <!-- Map (Area 3) -->
+    <div class="card soft area-m">
+      <div class="row-flex">
+        <h2>Map & GPS</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" onclick="startGPS()">Use GPS</button>
+          <button class="btn" onclick="stopGPS()">Stop</button>
+          <button class="btn" onclick="centerKY()">Center KY</button>
+        </div>
+      </div>
+      <div id="map"></div>
+      <div class="sub" id="gpsStatus" style="margin-top:8px">GPS idle</div>
+    </div>
 
-</div>
+  </div>
 
-<!-- Lakes -->
-<div class="card">
-<table>
-<thead>
-<tr>
-<th>★</th><th>Lake</th>
-<th class="num">Pool</th>
-<th class="num">Δ</th>
-<th class="num">24h</th>
-<th class="num">%Util</th>
-</tr>
-</thead>
-<tbody id="lakes">
-<tr><td colspan="6">Loading…</td></tr>
-</tbody>
-</table>
+  <!-- Lakes + Charts -->
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Basin</th>
+            <th>Project</th>
+            <th class="num">Pool</th>
+            <th class="num">Dev</th>
+            <th class="num">24h Δ</th>
+            <th class="num">Rain</th>
+            <th class="num">In</th>
+            <th class="num">Out</th>
+            <th class="num">%Util</th>
+          </tr>
+        </thead>
+        <tbody id="lakesBody">
+          <tr><td colspan="9" style="padding:10px 8px">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-<!-- Chart -->
-<div style="margin-top:14px;border-top:1px dashed rgba(148,163,184,.25);padding-top:10px">
-<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-<strong>Lake Comparison</strong>
-<select id="chartMetric">
-<option value="percentUtil">% Utilization</option>
-<option value="todayPool">Pool Elevation</option>
-<option value="deviation">Deviation</option>
-<option value="inflow">Inflow</option>
-<option value="outflow">Outflow</option>
-<option value="change24h">24h Δ</option>
-</select>
-</div>
-<div style="height:360px;margin-top:10px">
-<canvas id="lakeChart"></canvas>
-</div>
-</div>
-</div>
+    <hr class="dash">
 
-<!-- Modal -->
-<div class="modal-bg" id="modalBG">
-<div class="modal">
-<button class="btn" onclick="closeModal()">Close</button>
-<h3 id="modalTitle"></h3>
-<div id="modalStats"></div>
-<div style="margin-top:12px;text-align:right">
-<a id="regsLink" class="btn primary" target="_blank">Open official regs</a>
-</div>
-</div>
-</div>
+    <!-- Lake selectable chart -->
+    <div class="row-flex">
+      <div>
+        <div style="font-weight:1000">Lake Comparison</div>
+        <div class="sub">Select a metric to compare lakes</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="sub" style="font-weight:900">Metric</span>
+        <select id="chartMetric">
+          <option value="percentUtil">% Utilization</option>
+          <option value="todayPool">Pool Elevation</option>
+          <option value="deviation">Deviation</option>
+          <option value="inflow">Inflow</option>
+          <option value="outflow">Outflow</option>
+          <option value="change24h">24h Δ</option>
+        </select>
+      </div>
+    </div>
 
-<div class="footer">
-Not affiliated with USACE or KDFWR
-</div>
+    <div class="chart-wrap">
+      <canvas id="lakeChart"></canvas>
+    </div>
+
+    <!-- Fish limits chart (C = below lake chart) -->
+    <hr class="dash">
+
+    <div class="row-flex">
+      <div>
+        <div style="font-weight:1000">Fish Limits</div>
+        <div class="sub">Tap a species for statewide defaults (always verify special regs)</div>
+      </div>
+      <a class="btn primary" href="https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx" target="_blank" rel="noopener">Official regs</a>
+    </div>
+
+    <div class="pill-row" id="fishPills"></div>
+
+    <div class="fish-card">
+      <div class="fish-title">
+        <strong id="fishName">—</strong>
+        <div class="fish-meta" id="fishSource">—</div>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric">
+          <div class="k">Minimum size</div>
+          <div class="v" id="fishMin">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Daily limit</div>
+          <div class="v" id="fishDaily">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Possession limit</div>
+          <div class="v" id="fishPoss">—</div>
+        </div>
+      </div>
+
+      <div class="note" id="fishNote">—</div>
+    </div>
+  </div>
+
+  <!-- Lake detail modal -->
+  <div class="modal-bg" id="modalBG" onclick="if(event.target.id==='modalBG') closeModal()">
+    <div class="modal">
+      <div class="row-flex">
+        <button class="btn" onclick="closeModal()">Close</button>
+        <a class="btn primary" id="modalRegsLink" target="_blank" rel="noopener">Official regs</a>
+      </div>
+
+      <h3 id="modalTitle">—</h3>
+      <div class="sub" id="modalSubtitle">—</div>
+
+      <div class="kv" id="modalKV"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Not affiliated with USACE or KDFWR • Use at your own risk
+  </div>
 
 </div>
 
 <script>
-const API="https://ky-lake-backend.onrender.com";
-let lastLakes=[];
-let lakeChart=null;
-let currentMetric="percentUtil";
+/* ------------------- CONFIG ------------------- */
+const BACKEND_URL = "https://ky-lake-backend.onrender.com";
 
-/* Map */
-let map=L.map("map").setView([37.8,-84.2],7);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
-let gpsWatch=null,marker=null;
-function centerKY(){map.setView([37.8,-84.2],7)}
+/* ------------------- STATE ------------------- */
+let lastLakes = [];
+let lakeChart = null;
+let currentMetric = "percentUtil";
+
+/* ------------------- HELPERS ------------------- */
+function fmt(n, d=1){
+  if(n===null || n===undefined || Number.isNaN(Number(n))) return "—";
+  return Number(n).toFixed(d);
+}
+function clsDelta(v){
+  v = Number(v||0);
+  if(v>0) return "pos";
+  if(v<0) return "neg";
+  return "";
+}
+
+/* ------------------- MAP ------------------- */
+let map = L.map("map").setView([37.8, -84.2], 7);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18 }).addTo(map);
+
+let gpsWatch = null;
+let gpsMarker = null;
+
+function centerKY(){ map.setView([37.8, -84.2], 7); }
+
 function startGPS(){
-if(!navigator.geolocation)return;
-gpsWatch=navigator.geolocation.watchPosition(p=>{
-let {latitude,longitude}=p.coords;
-if(!marker)marker=L.circleMarker([latitude,longitude],{radius:7,color:"#22c55e"}).addTo(map);
-marker.setLatLng([latitude,longitude]);
-map.setView([latitude,longitude],13);
-document.getElementById("gpsStatus").textContent="GPS active";
-});
+  if(!navigator.geolocation){
+    document.getElementById("gpsStatus").textContent="GPS not supported";
+    return;
+  }
+  if(gpsWatch) return;
+
+  document.getElementById("gpsStatus").textContent="Requesting location…";
+  gpsWatch = navigator.geolocation.watchPosition(
+    (pos)=>{
+      const {latitude, longitude} = pos.coords;
+      if(!gpsMarker){
+        gpsMarker = L.circleMarker([latitude, longitude], { radius:7, color:"#22c55e" }).addTo(map);
+      }
+      gpsMarker.setLatLng([latitude, longitude]);
+      map.setView([latitude, longitude], 13);
+      document.getElementById("gpsStatus").textContent="GPS active";
+    },
+    (err)=>{
+      document.getElementById("gpsStatus").textContent="GPS blocked/unavailable";
+      gpsWatch=null;
+    },
+    { enableHighAccuracy:true, maximumAge: 15000, timeout: 12000 }
+  );
 }
+
 function stopGPS(){
-if(gpsWatch)navigator.geolocation.clearWatch(gpsWatch);
-document.getElementById("gpsStatus").textContent="GPS stopped";
+  if(gpsWatch){
+    navigator.geolocation.clearWatch(gpsWatch);
+    gpsWatch=null;
+  }
+  document.getElementById("gpsStatus").textContent="GPS stopped";
 }
 
-/* Weather */
-async function loadWeather(){
-let zip=document.getElementById("zip").value;
-let g=await fetch(`https://api.zippopotam.us/us/${zip}`).then(r=>r.json());
-let p=g.places[0];
-let w=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${p.latitude}&longitude=${p.longitude}&hourly=temperature_2m&temperature_unit=fahrenheit`).then(r=>r.json());
-document.getElementById("weatherTitle").textContent=`Weather – ${p["place name"]}`;
-document.getElementById("weather").textContent=`Now: ${w.hourly.temperature_2m[0]}°F`;
-}
-loadWeather();
-
-/* Lakes */
-async function loadLakes(){
-let d=await fetch(`${API}/lakes`).then(r=>r.json());
-lastLakes=d.lakes||[];
-let tb=document.getElementById("lakes");
-tb.innerHTML="";
-lastLakes.forEach(l=>{
-tb.innerHTML+=`
-<tr class="row" onclick="openModal('${l.project}')">
-<td><button class="fav">☆</button></td>
-<td>${l.project}</td>
-<td class="num">${l.todayPool?.toFixed(1)}</td>
-<td class="num ${l.deviation>0?"pos":"neg"}">${l.deviation?.toFixed(1)}</td>
-<td class="num">${l.change24h?.toFixed(1)}</td>
-<td class="num">${l.percentUtil?.toFixed(2)}</td>
-</tr>`;
+/* ------------------- THEME ------------------- */
+const dayToggle = document.getElementById("dayToggle");
+dayToggle.addEventListener("change", ()=>{
+  document.body.classList.toggle("day-mode", dayToggle.checked);
+  setTimeout(()=>map.invalidateSize(), 150);
+  renderLakeChart(lastLakes);
 });
-renderChart();
+
+/* ------------------- WEATHER (ZIP -> zippopotam -> open-meteo) ------------------- */
+async function loadWeatherByZip(zip){
+  const title = document.getElementById("weatherTitle");
+  const meta  = document.getElementById("weatherMeta");
+  const main  = document.getElementById("weatherMain");
+
+  try{
+    const geoResp = await fetch(`https://api.zippopotam.us/us/${zip}`);
+    if(!geoResp.ok) throw new Error("ZIP lookup failed");
+    const geo = await geoResp.json();
+    const place = geo.places[0];
+    const lat = Number(place.latitude);
+    const lon = Number(place.longitude);
+    const city = place["place name"];
+    const st = place["state abbreviation"];
+
+    title.textContent = `Weather – ${city}, ${st}`;
+    meta.textContent = `ZIP ${zip}`;
+
+    const meteoResp = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,wind_speed_10m&temperature_unit=fahrenheit&windspeed_unit=mph&forecast_days=1`
+    );
+    const meteo = await meteoResp.json();
+
+    const temps = meteo.hourly?.temperature_2m || [];
+    const winds = meteo.hourly?.wind_speed_10m || [];
+    const precip = meteo.hourly?.precipitation || [];
+
+    const nowT = temps[0] ?? null;
+    const nowW = winds[0] ?? null;
+    const high = temps.length ? Math.max(...temps) : null;
+    const low  = temps.length ? Math.min(...temps) : null;
+    const rain = precip.length ? precip.reduce((a,b)=>a+b,0) : null;
+
+    main.textContent =
+      `Now: ${nowT!=null ? nowT.toFixed(0)+"°F" : "—"} • Wind: ${nowW!=null ? nowW.toFixed(0)+" mph" : "—"} • High: ${high!=null ? high.toFixed(0)+"°F" : "—"} • Low: ${low!=null ? low.toFixed(0)+"°F" : "—"} • Rain: ${rain!=null ? rain.toFixed(2)+'"' : "—"}`;
+  }catch(e){
+    title.textContent="Weather";
+    meta.textContent="Could not load";
+    main.textContent="—";
+  }
 }
+
+document.getElementById("zipForm").addEventListener("submit",(e)=>{
+  e.preventDefault();
+  const zip = document.getElementById("zipInput").value.trim();
+  if(/^\d{5}$/.test(zip)) loadWeatherByZip(zip);
+});
+
+loadWeatherByZip(document.getElementById("zipInput").value.trim() || "40351");
+
+/* ------------------- LAKES ------------------- */
+async function loadLakes(){
+  const tbody = document.getElementById("lakesBody");
+  const updated = document.getElementById("updatedLabel");
+  const status = document.getElementById("statusLine");
+
+  tbody.innerHTML = `<tr><td colspan="9" style="padding:10px 8px">Loading…</td></tr>`;
+
+  try{
+    const resp = await fetch(`${BACKEND_URL}/lakes`, { cache:"no-store" });
+    const data = await resp.json();
+    if(data.error) throw new Error(data.message || "Backend error");
+
+    lastLakes = data.lakes || [];
+
+    tbody.innerHTML = "";
+    lastLakes.forEach((l)=>{
+      const tr = document.createElement("tr");
+      tr.style.cursor = "pointer";
+      tr.addEventListener("click", ()=>openModal(l));
+
+      tr.innerHTML = `
+        <td>${l.basin || "—"}</td>
+        <td style="font-weight:900">${l.project || "—"}</td>
+        <td class="num">${fmt(l.todayPool,1)}</td>
+        <td class="num ${clsDelta(l.deviation)}">${fmt(l.deviation,1)}</td>
+        <td class="num ${clsDelta(l.change24h)}">${fmt(l.change24h,1)}</td>
+        <td class="num">${fmt(l.precip24h,2)}</td>
+        <td class="num">${fmt(l.inflow,0)}</td>
+        <td class="num">${fmt(l.outflow,0)}</td>
+        <td class="num">${fmt(l.percentUtil,2)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const ts = data.timestamp ? new Date(data.timestamp) : new Date();
+    updated.textContent = `Updated: ${ts.toLocaleString()}`;
+    status.textContent = `Loaded ${lastLakes.length} lakes`;
+    renderLakeChart(lastLakes);
+  }catch(err){
+    updated.textContent = "Updated: error";
+    status.textContent = "Could not reach backend";
+    tbody.innerHTML = `<tr><td colspan="9" style="padding:10px 8px">Backend unreachable</td></tr>`;
+  }
+}
+
 loadLakes();
 
-/* Chart */
-function renderChart(){
-const ctx=document.getElementById("lakeChart").getContext("2d");
-if(lakeChart)lakeChart.destroy();
-const usable=lastLakes.filter(l=>l[currentMetric]!=null);
-lakeChart=new Chart(ctx,{
-type:"bar",
-data:{
-labels:usable.map(l=>l.project),
-datasets:[{label:currentMetric,data:usable.map(l=>l[currentMetric]),backgroundColor:"#3b82f6"}]
-},
-options:{indexAxis:"y",responsive:true,maintainAspectRatio:false}
+/* ------------------- LAKE CHART ------------------- */
+document.getElementById("chartMetric").addEventListener("change",(e)=>{
+  currentMetric = e.target.value;
+  renderLakeChart(lastLakes);
 });
-}
-document.getElementById("chartMetric").onchange=e=>{
-currentMetric=e.target.value;
-renderChart();
-};
 
-/* Modal */
-function openModal(name){
-document.getElementById("modalTitle").textContent=name;
-document.getElementById("modalStats").innerHTML="";
-document.getElementById("regsLink").href="https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx";
-document.getElementById("modalBG").style.display="flex";
-}
-function closeModal(){document.getElementById("modalBG").style.display="none"}
+function renderLakeChart(lakes){
+  const canvas = document.getElementById("lakeChart");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
 
-document.getElementById("dayToggle").onchange=e=>{
-document.body.classList.toggle("day-mode",e.target.checked);
-setTimeout(()=>map.invalidateSize(),150);
-};
+  const metric = currentMetric;
+
+  const metricConfig = {
+    percentUtil:{ label:"% Utilization", decimals:2 },
+    todayPool:{ label:"Pool Elevation (ft)", decimals:1 },
+    deviation:{ label:"Deviation (ft)", decimals:1 },
+    inflow:{ label:"Inflow (cfs)", decimals:0 },
+    outflow:{ label:"Outflow (cfs)", decimals:0 },
+    change24h:{ label:"24h Δ (ft)", decimals:1 },
+  };
+  const cfg = metricConfig[metric] || metricConfig.percentUtil;
+
+  const usable = (lakes||[])
+    .filter(l => l && l[metric] !== null && l[metric] !== undefined && !isNaN(l[metric]))
+    .sort((a,b)=> (a[metric]||0) - (b[metric]||0));
+
+  const labels = usable.map(l => l.project);
+  const values = usable.map(l => Number(l[metric]));
+
+  if(lakeChart) lakeChart.destroy();
+
+  const isDay = document.body.classList.contains("day-mode");
+  const axisColor = isDay ? "#020617" : "#E8F0FF";
+  const gridColor = isDay ? "rgba(15,23,42,0.18)" : "rgba(232,240,255,0.16)";
+  const yLabelColor = isDay ? "#020617" : "#FFFFFF";
+
+  lakeChart = new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels,
+      datasets:[{
+        label: cfg.label,
+        data: values,
+        borderRadius: 4,
+        barThickness: 14,
+        backgroundColor: isDay ? "#0284c7" : "#3b82f6",
+      }]
+    },
+    options:{
+      indexAxis:"y",
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{ labels:{ color:axisColor, font:{ size:12, weight:"800" } } },
+        tooltip:{
+          callbacks:{
+            label:(c)=> `${cfg.label}: ${Number(c.parsed.x).toFixed(cfg.decimals)}`
+          }
+        }
+      },
+      scales:{
+        x:{ ticks:{ color:axisColor }, grid:{ color:gridColor } },
+        y:{ ticks:{ color:yLabelColor, font:{ weight:"900" } }, grid:{ color:"rgba(148,163,184,0.10)" } }
+      }
+    }
+  });
+}
+
+/* ------------------- MODAL ------------------- */
+function openModal(lake){
+  const bg = document.getElementById("modalBG");
+  document.getElementById("modalTitle").textContent = lake.project || "Lake";
+  document.getElementById("modalSubtitle").textContent = (lake.basin ? `Basin: ${lake.basin}` : "—");
+
+  // Official regs link (generic statewide; you can swap this to a per-lake link later)
+  document.getElementById("modalRegsLink").href = "https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx";
+
+  const kv = document.getElementById("modalKV");
+  kv.innerHTML = `
+    <div class="box"><div class="label">Pool (ft)</div><div class="val">${fmt(lake.todayPool,1)}</div></div>
+    <div class="box"><div class="label">Deviation (ft)</div><div class="val">${fmt(lake.deviation,1)}</div></div>
+    <div class="box"><div class="label">24h Δ (ft)</div><div class="val">${fmt(lake.change24h,1)}</div></div>
+    <div class="box"><div class="label">Rain (in)</div><div class="val">${fmt(lake.precip24h,2)}</div></div>
+    <div class="box"><div class="label">Inflow (cfs)</div><div class="val">${fmt(lake.inflow,0)}</div></div>
+    <div class="box"><div class="label">Outflow (cfs)</div><div class="val">${fmt(lake.outflow,0)}</div></div>
+  `;
+
+  bg.style.display = "flex";
+}
+function closeModal(){
+  document.getElementById("modalBG").style.display = "none";
+}
+
+/* ------------------- FISH LIMITS (below chart) ------------------- */
+/*
+  Values displayed as "statewide defaults" based on KDFWR statewide table.
+  For Bluegill/Other Sunfish: KDFWR FINS regs show daily 15, no min.
+  Possession: often 2x daily (KDFWR guidance). Always verify special regs.
+*/
+const fishData = [
+  {
+    id:"muskie",
+    name:"Muskellunge (Muskie)",
+    min:'30"',
+    daily:"1",
+    poss:"2",
+    source:"Statewide table",
+    note:"Statewide default. Some waters have higher minimum size (special regs)."
+  },
+  {
+    id:"bass",
+    name:"Black Bass (Largemouth/Smallmouth/Spotted)",
+    min:'12" (LM/SM) • none (Spotted)',
+    daily:"6*",
+    poss:"12*",
+    source:"Statewide table",
+    note:"*Daily/possession is aggregate for black bass as noted in regs. Some lakes/rivers have slots/minimums."
+  },
+  {
+    id:"crappie",
+    name:"Crappie (Black & White)",
+    min:"none (statewide)",
+    daily:"20*",
+    poss:"40*",
+    source:"Statewide table",
+    note:"Some waters have minimum size limits (special regs)."
+  },
+  {
+    id:"bluegill",
+    name:"Bluegill / Other Sunfish",
+    min:"none",
+    daily:"15",
+    poss:"~30 (often 2× daily)",
+    source:"KDFWR program guidance",
+    note:"Displayed as common guidance; special regs can vary by waterbody. Use Official regs button to verify."
+  },
+  {
+    id:"walleye",
+    name:"Walleye / Sauger (and hybrids)",
+    min:'14"',
+    daily:"6*",
+    poss:"12*",
+    source:"Statewide table",
+    note:"Statewide combo limit shown. Some rivers have different limits/slots."
+  },
+];
+
+const fishPills = document.getElementById("fishPills");
+
+function setFish(id){
+  const f = fishData.find(x=>x.id===id) || fishData[0];
+
+  document.getElementById("fishName").textContent = f.name;
+  document.getElementById("fishMin").textContent = f.min;
+  document.getElementById("fishDaily").textContent = f.daily;
+  document.getElementById("fishPoss").textContent = f.poss;
+  document.getElementById("fishSource").textContent = `Source: ${f.source}`;
+  document.getElementById("fishNote").textContent = f.note;
+
+  [...fishPills.querySelectorAll(".pill")].forEach(p=>{
+    p.classList.toggle("active", p.dataset.id === id);
+  });
+}
+
+function buildFishPills(){
+  fishPills.innerHTML = "";
+  fishData.forEach(f=>{
+    const b = document.createElement("button");
+    b.className = "pill";
+    b.textContent = f.name.split(" (")[0]; // shorter label
+    b.dataset.id = f.id;
+    b.addEventListener("click", ()=>setFish(f.id));
+    fishPills.appendChild(b);
+  });
+  setFish(fishData[0].id);
+}
+
+buildFishPills();
 </script>
 </body>
 </html>
