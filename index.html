@@ -668,23 +668,7 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
           </div>
         </div>
 
-        <div class="modal-section">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <span class="tag ok">Quick actions</span>
-              <span class="subtitle">Center map + directions</span>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button id="lake-center-btn" class="pill-btn" type="button">Center on map</button>
-              <a id="lake-directions-btn" class="pill-btn primary" href="#" target="_blank" rel="noopener">Directions</a>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
+       
   <!-- Disclaimer modal (shows once) -->
   <div id="disclaimer-modal-backdrop" class="modal-backdrop">
     <div class="modal" style="max-width:520px;">
@@ -1421,8 +1405,7 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
 
       backdrop.style.display = "flex";
 
-      document.getElementById("lake-center-btn").onclick = () => centerLakeOnMap(lakeObj);
-      document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj);
+
       document.getElementById("lake-regs-refresh").onclick = () => loadLakeRegsIntoModal(lakeObj, true);
 
       loadLakeRegsIntoModal(lakeObj, false);
@@ -1742,4 +1725,5 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
   </script>
 </body>
 </html>
+
 
