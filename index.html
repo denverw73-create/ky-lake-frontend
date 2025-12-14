@@ -4,507 +4,383 @@
   <meta charset="UTF-8" />
   <title>KY Lake Levels</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- PWA -->
   <meta name="theme-color" content="#021326" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/icons/ky-lake-192.png" />
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Leaflet (Map) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
-    :root {
-      --bg-main: #020715;
-      --bg-card: #101827;
-      --bg-card-soft: #111827;
-      --border-subtle: #1f2937;
-      --text-main: #e5edff;
-      --text-muted: #9ca3af;
-      --accent: #3b82f6;
-      --accent-soft: rgba(59, 130, 246, 0.15);
-      --danger: #f97373;
-      --success: #4ade80;
-      --chip-bg: #111827;
+    :root{
+      --bg-main:#020617;
+      --bg-card:#101827;
+      --bg-soft:#111827;
+      --border:#1f2937;
+      --text:#e5edff;
+      --muted:#9ca3af;
+      --accent:#3b82f6;
+      --good:#4ade80;
+      --bad:#f87171;
+      --warn:#f59e0b;
+      --chip:rgba(148,163,184,.12);
     }
 
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+      background:radial-gradient(circle at top,#0b1120 0,#020617 55%);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
     }
 
-    body.boat-mode {
-      --bg-main: #f1f5f9;
-      --bg-card: #ffffff;
-      --bg-card-soft: #f8fafc;
-      --border-subtle: #cbd5f5;
-      --text-main: #020617;
-      --text-muted: #4b5563;
-      --accent: #0284c7;
-      --accent-soft: rgba(2, 132, 199, 0.18);
-      --chip-bg: #e2f3ff;
-      background: #e2f3ff;
+    /* Day mode */
+    body.day-mode{
+      --bg-main:#f1f5f9;
+      --bg-card:#ffffff;
+      --bg-soft:#f8fafc;
+      --border:#cbd5f5;
+      --text:#020617;
+      --muted:#4b5563;
+      --accent:#0284c7;
+      background:#e2f3ff;
     }
 
-    .app-shell {
-      width: 100%;
-      max-width: 1200px;
-      padding: 12px;
-      box-sizing: border-box;
+    .app{
+      width:100%;
+      max-width:1200px;
+      padding:12px;
+      box-sizing:border-box;
     }
 
-    header.app-header {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 10px;
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
     }
 
-    .title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    h1{margin:0;font-size:1.4rem}
+    .sub{font-size:.85rem;color:var(--muted)}
 
-    h1 { font-size: 1.4rem; margin: 0; }
-    .subtitle { font-size: 0.85rem; color: var(--text-muted); }
-
-    .status-pill {
-      font-size: 0.75rem;
-      border-radius: 999px;
-      padding: 4px 10px;
-      background: var(--bg-card-soft);
-      border: 1px solid var(--border-subtle);
-      display: inline-flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 2px;
+    .pill{
+      font-size:.75rem;
+      border-radius:999px;
+      padding:6px 10px;
+      background:var(--bg-soft);
+      border:1px solid var(--border);
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:2px;
     }
-    .status-pill strong { font-weight: 900; }
-    .status-pill span { font-size: 0.7rem; color: var(--text-muted); }
-    .status-pill .ok { color: var(--success); }
-    .status-pill .error { color: var(--danger); }
+    .pill strong{font-weight:900}
+    .pill span{font-size:.7rem;color:var(--muted)}
+    .ok{color:var(--good)}
+    .err{color:var(--bad)}
 
-    .card {
-      background: var(--bg-card);
-      border-radius: 16px;
-      border: 1px solid var(--border-subtle);
-      padding: 10px 14px;
-      box-sizing: border-box;
-      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.65);
+    .card{
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px 14px;
+      box-shadow:0 14px 30px rgba(15,23,42,.55);
     }
-    .card-soft {
-      background: var(--bg-card-soft);
-      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.45);
-    }
-    .card h2 { margin: 0 0 6px; font-size: 0.95rem; }
+    .soft{background:var(--bg-soft); box-shadow:0 10px 20px rgba(15,23,42,.35);}
 
-    /* Top layout: Sponsor left + Weather right (same height), Map full width below */
-    .top-grid {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "sponsor"
-        "weather"
-        "map";
-      align-items: stretch;
-      margin-bottom: 10px;
+    /* Top layout: Sponsor + Weather; Map full width */
+    .top-grid{
+      display:grid;
+      gap:10px;
+      grid-template-columns:1fr;
+      grid-template-areas:"sponsor" "weather" "map";
+      margin-bottom:10px;
+      align-items:stretch;
     }
-    .area-sponsor { grid-area: sponsor; }
-    .area-weather { grid-area: weather; }
-    .area-map { grid-area: map; }
+    .area-sponsor{grid-area:sponsor}
+    .area-weather{grid-area:weather}
+    .area-map{grid-area:map}
 
-    @media (min-width: 980px) {
-      .top-grid {
-        grid-template-columns: 1fr 1fr;
-        grid-template-areas:
-          "sponsor weather"
-          "map map";
+    @media(min-width:980px){
+      .top-grid{
+        grid-template-columns:1fr 1fr;
+        grid-template-areas:"sponsor weather" "map map";
       }
     }
 
-    /* Ensure sponsor + weather match heights */
-    .top-grid > section {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
+    .top-grid > section{
+      height:100%;
+      display:flex;
+      flex-direction:column;
     }
 
-    /* Buttons */
-    .pill-btn {
-      padding: 7px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-main);
-      color: var(--text-main);
-      font-size: 0.78rem;
-      cursor: pointer;
-      font-weight: 950;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      line-height: 1;
-      user-select: none;
-      white-space: nowrap;
+    .btn{
+      padding:7px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--bg-main);
+      color:var(--text);
+      font-size:.78rem;
+      font-weight:900;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      user-select:none;
+      white-space:nowrap;
     }
-    .pill-btn.primary {
-      background: var(--accent);
-      border-color: transparent;
-      color: #fff;
+    .btn.primary{
+      background:var(--accent);
+      border-color:transparent;
+      color:#fff;
     }
-    .pill-btn:active { transform: translateY(1px); }
+    .btn:active{transform:translateY(1px)}
+
+    input,select,textarea{
+      background:var(--bg-main);
+      color:var(--text);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:.82rem;
+      outline:none;
+    }
+    textarea{
+      border-radius:12px;
+      padding:10px;
+      resize:vertical;
+      min-height:90px;
+    }
 
     /* Sponsor */
-    .sponsor-wrap { display: flex; gap: 10px; align-items: center; min-height: 62px; }
-    .sponsor-logo {
-      width: 56px; height: 56px; border-radius: 14px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-main);
-      object-fit: cover;
-      flex: 0 0 auto;
+    .sponsor-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
     }
-    .sponsor-title { font-weight: 1000; font-size: 0.95rem; margin: 0; }
-    .sponsor-sub { margin: 2px 0 6px; font-size: 0.82rem; color: var(--text-muted); }
-    .sponsor-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .s-logo{
+      width:56px;height:56px;border-radius:14px;
+      border:1px solid var(--border);
+      background:var(--bg-main);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:1000;
+      flex:0 0 auto;
+    }
+    .s-title{font-weight:1000;font-size:.95rem;margin:0}
+    .s-cta{font-size:.82rem;color:var(--muted);margin-top:2px}
+    .s-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 
     /* Weather */
-    .zip-form {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 6px;
+    .weather-main{
+      margin-top:6px;
+      font-size:.92rem;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
     }
-    .zip-form input {
-      width: 90px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-main);
-      color: var(--text-main);
-      font-size: 0.85rem;
-      outline: none;
+    .weather-footer{
+      margin-top:auto;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      padding-top:10px;
+      align-items:flex-end;
     }
-
-    .boat-toggle, .alert-toggle-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      color: var(--text-muted);
+    .toggles{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:6px;
+      color:var(--muted);
+      font-size:.8rem;
     }
-    .boat-toggle input, .alert-toggle-label input {
-      accent-color: var(--accent);
-      transform: scale(1.1);
+    .toggles label{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      user-select:none;
     }
-
-    .weather-footer {
-      margin-top: auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding-top: 10px;
-    }
-    .weather-toggles {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-    }
+    .toggles input{transform:scale(1.1); accent-color:var(--accent);}
 
     /* Map */
-    #map { height: 340px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-subtle); }
-    .map-legend {
-      display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;
-      color: var(--text-muted); font-size:0.78rem;
+    #map{
+      height:340px;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid var(--border);
+      margin-top:10px;
     }
-    .dot { width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px; background: var(--accent); }
-    .dot.user { background: #22c55e; }
-    .dot.sponsor { background: #f59e0b; }
-
-    /* Main grid */
-    .main-grid { display: flex; flex-direction: column; gap: 10px; }
-
-    /* Fish limits (tiles) */
-    .fish-grid {
-      margin-top: 10px;
-      display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    }
-    .fish-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 14px;
-      padding: 12px;
-      box-shadow: none;
-    }
-    .fish-head {
+    .map-bar{
       display:flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .fish-name {
-      display:flex;
+      justify-content:space-between;
       align-items:center;
       gap:10px;
-      font-weight: 1000;
-      font-size: 0.95rem;
+      flex-wrap:wrap;
     }
-    .fish-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 10px;
-      background: var(--bg-main);
-      border: 1px solid var(--border-subtle);
+    .legend{
       display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 16px;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:8px;
+      color:var(--muted);
+      font-size:.78rem;
     }
-    .badge {
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.24);
-      background: rgba(59,130,246,0.10);
-      font-size: 0.75rem;
-      font-weight: 950;
-      white-space: nowrap;
-    }
-    .badge.ok { background: rgba(34, 197, 94, 0.14); }
-    .fish-stats {
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .stat {
-      background: rgba(148,163,184,0.10);
-      border: 1px solid rgba(148,163,184,0.16);
-      border-radius: 12px;
-      padding: 10px;
-    }
-    .stat .label {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      font-weight: 900;
-      margin-bottom: 4px;
-    }
-    .stat .value {
-      font-size: 1.02rem;
-      font-weight: 1000;
-    }
-    .fish-notes {
-      margin-top: 10px;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      line-height: 1.35;
-    }
+    .dot{width:10px;height:10px;border-radius:999px;display:inline-block;margin-right:6px}
+    .dot.user{background:#22c55e}
+    .dot.sponsor{background:var(--warn)}
+    .dot.lake{background:var(--accent)}
 
     /* Lake table */
-    .table-wrapper { overflow: auto; max-height: calc(100vh - 260px); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    thead { position: sticky; top: 0; background: var(--bg-card); z-index: 2; }
-    th, td {
-      padding: 7px 8px;
-      text-align: left;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-      white-space: nowrap;
-    }
-    th { font-size: 0.75rem; color: var(--text-muted); font-weight: 900; }
-    tbody tr:nth-child(even) { background: rgba(15, 23, 42, 0.25); }
-    body.boat-mode tbody tr:nth-child(even) { background: rgba(2, 6, 23, 0.04); }
+    .table-wrap{overflow:auto; max-height:calc(100vh - 280px);}
+    table{width:100%;border-collapse:collapse;font-size:.82rem}
+    thead{position:sticky;top:0;background:var(--bg-card);z-index:2}
+    th,td{padding:7px 8px;border-bottom:1px solid rgba(148,163,184,.18);white-space:nowrap}
+    th{font-size:.75rem;color:var(--muted);font-weight:900}
+    tbody tr:nth-child(even){background:rgba(15,23,42,.22)}
+    body.day-mode tbody tr:nth-child(even){background:rgba(2,6,23,.04)}
+    .num{text-align:right;font-variant-numeric:tabular-nums}
+    .pos{color:var(--good)}
+    .neg{color:var(--bad)}
+    .row-click{cursor:pointer}
+    .row-click:hover{outline:1px solid rgba(59,130,246,.35); outline-offset:-1px;}
 
-    .num { text-align: right; font-variant-numeric: tabular-nums; }
-    .delta-pos { color: var(--success); }
-    .delta-neg { color: var(--danger); }
-
-    .fav-cell { text-align: center; width: 32px; }
-    .fav-btn {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-size: 1.05rem;
-      line-height: 1;
-      padding: 0;
-      color: #64748b;
+    .fav-cell{width:34px;text-align:center}
+    .fav-btn{
+      background:transparent;border:none;cursor:pointer;
+      font-size:1.05rem;line-height:1;
+      color:#64748b;
     }
-    .fav-btn.favorited { color: #fbbf24; }
-    .clickable-row { cursor: pointer; }
-    .clickable-row:hover { outline: 1px solid rgba(59,130,246,0.35); outline-offset: -1px; }
-
-    /* Chart */
-    .chart-card { margin-top: 10px; }
-    .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 4px;
-    }
-    .chart-title { font-size: 0.9rem; font-weight: 1000; }
-    .chart-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; }
-    .chart-container { position: relative; height: 340px; max-height: 380px; }
+    .fav-btn.on{color:#fbbf24}
 
     /* Modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      padding: 16px;
+    .modal-bg{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.7);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      padding:16px;
     }
-    .modal {
-      width: 100%;
-      max-width: 680px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 18px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
-      overflow: hidden;
+    .modal{
+      width:100%;
+      max-width:680px;
+      background:var(--bg-card);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow:0 22px 50px rgba(0,0,0,.55);
+      overflow:hidden;
     }
-    .modal-header {
-      padding: 12px 14px;
+    .modal-head{
       display:flex;
-      justify-content: space-between;
+      justify-content:space-between;
       align-items:center;
-      gap: 10px;
-      border-bottom: 1px solid rgba(148,163,184,0.18);
+      gap:10px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(148,163,184,.18);
     }
-    .modal-body { padding: 12px 14px; }
-    .modal h3 { margin: 0; font-size: 1rem; }
-    .modal-close {
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-main);
-      color: var(--text-main);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-weight: 1000;
-      cursor: pointer;
+    .modal-head h3{margin:0;font-size:1rem}
+    .modal-body{padding:12px 14px}
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+      gap:10px;
+      margin-bottom:12px;
     }
-    .modal-section {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px dashed rgba(148,163,184,0.18);
+    .stat{
+      background:var(--chip);
+      border:1px solid rgba(148,163,184,.16);
+      border-radius:14px;
+      padding:10px;
     }
-    .regs-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    .regs-table th, .regs-table td {
-      padding: 8px 8px;
-      border-bottom: 1px solid rgba(148,163,184,0.16);
-      vertical-align: top;
-      white-space: normal;
-    }
-    .tag {
-      display:inline-flex;
+    .stat .label{font-size:.72rem;color:var(--muted);font-weight:900;margin-bottom:4px}
+    .stat .value{font-size:1.02rem;font-weight:1000}
+
+    .modal-actions{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
       align-items:center;
-      gap:6px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.2);
-      background: rgba(59,130,246,0.10);
-      color: var(--text-main);
-      font-size: 0.75rem;
-      font-weight: 950;
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px dashed rgba(148,163,184,.20);
     }
-    .tag.warn { background: rgba(245, 158, 11, 0.16); }
 
-    /* Footer */
-    .disclaimer-footer {
-      width: 100%;
-      text-align: center;
-      margin-top: 28px;
-      padding: 18px 10px;
-      font-size: 0.8rem;
-      opacity: 0.75;
-      color: #cbd5e1;
-    }
-    .boat-mode .disclaimer-footer { color: #111827; opacity: 0.75; }
-
-    /* Small inputs/selects */
-    select {
-      font-size: 0.78rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-main);
-      color: var(--text-main);
-      outline: none;
+    .footer{
+      text-align:center;
+      margin:26px 0 10px;
+      font-size:.78rem;
+      color:var(--muted);
+      opacity:.85;
     }
   </style>
 </head>
 
 <body>
-  <div class="app-shell">
-    <header class="app-header">
-      <div class="title-row">
-        <div>
-          <h1>KY Lake Levels</h1>
-          <div class="subtitle">Live levels, maps, sponsors, and fish regs for your favorite KY waters</div>
-        </div>
-        <div class="status-pill">
-          <strong id="updated-label">Updated: —</strong>
-          <span id="status-line">Waiting for data…</span>
-          <span style="margin-top: 2px; font-size: 0.7rem">Units: ft, cfs, in</span>
-        </div>
+  <div class="app">
+    <header>
+      <div>
+        <h1>KY Lake Levels</h1>
+        <div class="sub">Live levels, maps, sponsors, and quick regs links for your favorite KY waters</div>
+      </div>
+      <div class="pill">
+        <strong id="updatedLabel">Updated: —</strong>
+        <span id="statusLine">Waiting for data…</span>
+        <span>Units: ft, cfs, in</span>
       </div>
     </header>
 
     <div class="top-grid">
       <!-- Sponsor -->
-      <section class="card card-soft area-sponsor">
-        <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Sponsored</div>
-        <div id="sponsor-content" class="sponsor-wrap">
-          <div style="font-size:0.85rem; color: var(--text-muted);">Loading sponsor…</div>
+      <section class="card soft area-sponsor">
+        <div class="sub" style="margin-bottom:6px;">Sponsored</div>
+        <div id="sponsorBox" class="sponsor-row">
+          <div class="s-logo">S</div>
+          <div style="flex:1 1 auto;">
+            <div class="s-title">Sponsor spot available</div>
+            <div class="s-cta">Own a marina, bait shop, guide service, or campground? Reach local boaters here.</div>
+            <div class="s-actions">
+              <a class="btn primary" href="#" onclick="alert('Add your sponsor contact flow here (backend / admin).'); return false;">Become a sponsor</a>
+            </div>
+          </div>
         </div>
       </section>
 
       <!-- Weather -->
-      <section class="card card-soft area-weather">
-        <h2 id="weather-title">Weather – Morehead, KY</h2>
-        <div class="subtitle" id="weather-meta">Default: Morehead, KY — enter ZIP to change.</div>
-        <div id="weather-main" style="margin-top:6px; font-size:0.92rem;">
+      <section class="card soft area-weather">
+        <h2 id="weatherTitle">Weather – Morehead, KY</h2>
+        <div class="sub" id="weatherMeta">Default: Morehead, KY — enter ZIP to change.</div>
+
+        <div class="weather-main" id="weatherMain">
           <div>Now: —°F, Wind: — mph</div>
           <div>High: —°F, Low: —°F, Rain (24h): —"</div>
         </div>
 
         <div class="weather-footer">
-          <form class="zip-form" id="zip-form">
-            <label for="zip-input" class="subtitle" style="font-size: 0.75rem">ZIP</label>
-            <input id="zip-input" type="text" maxlength="5" pattern="\d{5}" value="40351" />
-            <button class="pill-btn primary" type="submit">Go</button>
+          <form id="zipForm" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <label class="sub" for="zipInput" style="font-size:.75rem;">ZIP</label>
+            <input id="zipInput" maxlength="5" pattern="\d{5}" value="40351" />
+            <button class="btn primary" type="submit">Go</button>
           </form>
 
-          <div class="weather-toggles">
-            <label class="boat-toggle">
-              <input type="checkbox" id="boat-toggle" />
-              <span>Boat mode (bright)</span>
+          <div class="toggles">
+            <label>
+              <input type="checkbox" id="dayToggle" />
+              <span>Day mode (bright)</span>
             </label>
-            <label class="alert-toggle-label">
-              <input type="checkbox" id="alerts-toggle" />
+            <div class="sub" style="font-size:.75rem;">Off = Night mode (dark)</div>
+
+            <label>
+              <input type="checkbox" id="alertsToggle" />
               <span>Alerts for favorites (24h Δ ≥ 2 ft)</span>
             </label>
           </div>
@@ -512,178 +388,93 @@
       </section>
 
       <!-- Map -->
-      <section class="card card-soft area-map">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+      <section class="card soft area-map">
+        <div class="map-bar">
           <div>
             <h2 style="margin:0;">Map & GPS</h2>
-            <div class="subtitle" id="map-status">GPS: idle</div>
+            <div class="sub" id="gpsStatus">GPS: idle</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button id="gps-btn" class="pill-btn primary" type="button">Use GPS</button>
-            <button id="gps-stop-btn" class="pill-btn" type="button">Stop</button>
-            <button id="center-ky-btn" class="pill-btn" type="button">Center KY</button>
+            <button class="btn primary" id="gpsBtn" type="button">Use GPS</button>
+            <button class="btn" id="gpsStopBtn" type="button">Stop</button>
+            <button class="btn" id="centerKyBtn" type="button">Center KY</button>
           </div>
         </div>
 
-        <div style="margin-top:10px;">
-          <div id="map"></div>
-          <div class="map-legend">
-            <span><span class="dot user"></span>Your GPS</span>
-            <span><span class="dot sponsor"></span>Sponsors</span>
-            <span><span class="dot"></span>Tap a sponsor pin for details</span>
-          </div>
+        <div id="map"></div>
+
+        <div class="legend">
+          <span><span class="dot user"></span>Your GPS</span>
+          <span><span class="dot sponsor"></span>Sponsors</span>
+          <span><span class="dot lake"></span>Lakes (if coords available)</span>
         </div>
 
-        <div class="subtitle" style="margin-top:8px;">
+        <div class="sub" style="margin-top:8px;">
           Tip: Location needs HTTPS + permission. We only use GPS to show your position.
         </div>
       </section>
     </div>
 
-    <main class="main-grid">
-      <!-- Fish Limits -->
-      <section class="card card-soft">
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap;">
-          <div>
-            <h2 style="margin:0;">KY Fish Size & Creel Limits</h2>
-            <div class="subtitle" style="margin-top:4px;">
-              Statewide defaults (quick reference). Tap a lake row to view special regulations for that water.
-            </div>
-          </div>
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <label class="subtitle" for="fish-select" style="font-size:0.75rem;">Species</label>
-            <select id="fish-select"></select>
-            <a class="pill-btn" href="https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx" target="_blank" rel="noopener">Official KY limits</a>
-            <a class="pill-btn" href="https://fw.ky.gov/Fish/Documents/fishingguide.pdf" target="_blank" rel="noopener">KY guide PDF</a>
-          </div>
-        </div>
-
-        <div id="fish-limits-panel" class="fish-grid"></div>
-
-        <div class="subtitle" style="margin-top:10px; font-size:0.75rem;">
-          Always verify special regs for the specific waterbody (KDFWR). If in doubt, release the fish.
-        </div>
-      </section>
-
-      <!-- Lakes + Chart -->
-      <section class="card">
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:32px;">★</th>
-                <th>Basin</th>
-                <th>Project</th>
-                <th class="num">Pool</th>
-                <th class="num">Dev.</th>
-                <th class="num">24h Δ</th>
-                <th class="num">Rain</th>
-                <th class="num">Inflow</th>
-                <th class="num">Outflow</th>
-                <th class="num">% Util</th>
-              </tr>
-            </thead>
-            <tbody id="lakes-body">
-              <tr>
-                <td colspan="10" style="padding: 10px 8px; font-size: 0.85rem">Loading live lake data…</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <section class="chart-card">
-          <div class="chart-header">
-            <div class="chart-title">Flood Pool & Selected Metric</div>
-            <div>
-              <label style="font-size:0.75rem; color:var(--text-muted); margin-right:6px;">Chart metric:</label>
-              <select id="chart-metric">
-                <option value="percentUtil">% Utilization</option>
-                <option value="todayPool">Pool Elevation</option>
-                <option value="deviation">Deviation</option>
-                <option value="inflow">Inflow</option>
-                <option value="outflow">Outflow</option>
-              </select>
-            </div>
-          </div>
-          <div class="chart-subtitle">Tap a lake row for special regulations.</div>
-          <div class="chart-container">
-            <canvas id="floodChart"></canvas>
-          </div>
-        </section>
-      </section>
-    </main>
-
-    <footer class="disclaimer-footer">
-      <p><strong>Disclaimer:</strong> Not affiliated with USACE or KDFWR. Data and regulations are provided for convenience only; verify official sources before fishing.</p>
-    </footer>
-  </div>
-
-  <!-- Lake Detail Modal (NO QUICK ACTIONS SECTION) -->
-  <div id="lake-modal-backdrop" class="modal-backdrop">
-    <div class="modal">
-      <div class="modal-header">
-        <div>
-          <h3 id="lake-modal-title">Lake Details</h3>
-          <div class="subtitle" id="lake-modal-subtitle">—</div>
-        </div>
-        <button class="modal-close" id="lake-modal-close">Close</button>
+    <!-- Lakes table -->
+    <section class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:34px;">★</th>
+              <th>Basin</th>
+              <th>Project</th>
+              <th class="num">Pool</th>
+              <th class="num">Dev.</th>
+              <th class="num">24h Δ</th>
+              <th class="num">Rain</th>
+              <th class="num">Inflow</th>
+              <th class="num">Outflow</th>
+              <th class="num">% Util</th>
+            </tr>
+          </thead>
+          <tbody id="lakesBody">
+            <tr><td colspan="10" style="padding:10px 8px;">Loading…</td></tr>
+          </tbody>
+        </table>
       </div>
+    </section>
 
-      <div class="modal-body">
-        <div id="lake-modal-stats"></div>
-
-        <div class="modal-section">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <span class="tag warn">Special regulations</span>
-              <span class="subtitle" id="lake-regs-status">Loading…</span>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <a id="lake-regs-link" class="pill-btn" href="#" target="_blank" rel="noopener">Open official regs</a>
-              <button id="lake-regs-refresh" class="pill-btn" type="button">Refresh</button>
-            </div>
-          </div>
-
-          <div style="margin-top:10px;">
-            <table class="regs-table">
-              <thead>
-                <tr>
-                  <th style="width:34%;">Species</th>
-                  <th>Regulation</th>
-                </tr>
-              </thead>
-              <tbody id="lake-regs-body">
-                <tr><td colspan="2">Loading…</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="subtitle" style="margin-top:8px;">
-            Showing only your selected species (Muskie, Bass, Crappie, Bluegill, Sauger/Walleye).
-            If a row says “Statewide regs apply”, use the statewide card above.
-          </div>
-        </div>
-      </div>
+    <div class="footer">
+      Not affiliated with USACE or KDFWR. Verify official sources before boating/fishing.
     </div>
   </div>
 
-  <!-- Disclaimer modal (once) -->
-  <div id="disclaimer-modal-backdrop" class="modal-backdrop">
-    <div class="modal" style="max-width:520px;">
-      <div class="modal-header">
+  <!-- Lake modal -->
+  <div class="modal-bg" id="lakeModalBg" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
         <div>
-          <h3>Important Disclaimer</h3>
-          <div class="subtitle">Read once per device</div>
+          <h3 id="lakeModalTitle">Lake</h3>
+          <div class="sub" id="lakeModalSubtitle">—</div>
         </div>
-        <div></div>
+        <button class="btn" id="lakeModalClose" type="button">Close</button>
       </div>
       <div class="modal-body">
-        <p class="subtitle" style="font-size:0.9rem; line-height:1.4;">
-          This application is not affiliated with, endorsed by, or sponsored by the U.S. Army Corps of Engineers or KDFWR.
-          All lake data and regulation references are from public sources. Accuracy is not guaranteed.
-          You are responsible for your safety and for verifying fishing regulations for your specific waterbody.
-        </p>
-        <button id="disclaimer-accept-btn" class="pill-btn primary" style="margin-top:10px;">I Understand</button>
+        <div class="stats-grid" id="lakeModalStats"></div>
+
+        <div class="modal-actions">
+          <a class="btn primary" id="officialRegsLink" href="#" target="_blank" rel="noopener">Open official regs</a>
+
+          <button class="btn" id="reportBtn" type="button">Report incorrect data</button>
+        </div>
+
+        <div id="reportBox" style="display:none; margin-top:10px;">
+          <div class="sub" style="margin-bottom:6px;">
+            Describe what looks wrong. This will try to send to the backend at <code>/report</code>. If it fails, you can copy the message.
+          </div>
+          <textarea id="reportText" placeholder="Example: Pool looks off by ~2 ft compared to USACE page…"></textarea>
+          <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; justify-content:flex-end;">
+            <button class="btn" id="copyReportBtn" type="button">Copy</button>
+            <button class="btn primary" id="sendReportBtn" type="button">Send</button>
+          </div>
+          <div class="sub" id="reportStatus" style="margin-top:8px;"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -694,330 +485,144 @@
     // =========================
     const BACKEND_URL = "https://ky-lake-backend.onrender.com";
 
+    // Local storage keys
     const FAVORITES_KEY = "kyLakeFavorites";
-    const LAST_DATA_KEY = "kyLakeLastData";
     const ALERTS_ENABLED_KEY = "kyLakeAlertsEnabled";
-    const ALERTS_LAST_KEY = "kyLakeAlertsLast";
-    const DISCLAIMER_KEY = "kyLakeDisclaimerAccepted";
+    const ALERTS_LAST_KEY = "kyLakeAlertsLast_v1";
+    const LAST_DATA_KEY = "kyLakeLastData_v1";
     const SPONSORS_CACHE_KEY = "kyLakeSponsorsCache_v1";
-    const REGS_CACHE_KEY = "kyLakeRegsCache_v1";
 
-    let floodChart = null;
-    window.lastLakeData = null;
-    let currentChartMetric = "percentUtil";
-
+    // State
+    let lastLakes = [];
     let sponsorList = [];
-
-    // Map/GPS
-    let map = null;
-    let userMarker = null;
-    let accuracyCircle = null;
-    let gpsWatchId = null;
-    let sponsorLayer = null;
-
     let selectedLake = null;
 
+    // Map state
+    let map = null;
+    let gpsWatchId = null;
+    let userMarker = null;
+    let accuracyCircle = null;
+    let sponsorLayer = null;
+    let lakeLayer = null;
+
     // =========================
-    // UTIL
+    // HELPERS
     // =========================
-    function formatNumber(value, decimals = 1) {
-      if (value === null || value === undefined || isNaN(value)) return "—";
-      return Number(value).toFixed(decimals);
+    const $ = (id) => document.getElementById(id);
+
+    function safeText(v){ return (v === null || v === undefined) ? "" : String(v); }
+    function formatNumber(v, d=1){
+      if (v === null || v === undefined || isNaN(v)) return "—";
+      return Number(v).toFixed(d);
     }
-    function classifyDelta(v) {
-      if (v > 0) return "delta-pos";
-      if (v < 0) return "delta-neg";
+    function classifyDelta(v){
+      if (v > 0) return "pos";
+      if (v < 0) return "neg";
       return "";
     }
-    function safeText(s) { return (s === null || s === undefined) ? "" : String(s); }
-    function nowIso() { return new Date().toISOString(); }
+    function nowIso(){ return new Date().toISOString(); }
 
-    function cacheJSON(key, obj) {
+    function cacheJSON(key, obj){
       try { localStorage.setItem(key, JSON.stringify(obj)); } catch {}
     }
-    function loadCachedJSON(key) {
+    function loadJSON(key){
       try {
         const raw = localStorage.getItem(key);
         return raw ? JSON.parse(raw) : null;
       } catch { return null; }
     }
 
-    function getFavorites() {
-      try {
+    // =========================
+    // FAVORITES
+    // =========================
+    function getFavorites(){
+      try{
         const raw = localStorage.getItem(FAVORITES_KEY);
         return raw ? JSON.parse(raw) : [];
-      } catch { return []; }
+      }catch{ return []; }
     }
-    function saveFavorites(list) {
+    function setFavorites(list){
       localStorage.setItem(FAVORITES_KEY, JSON.stringify(list));
     }
+    function toggleFavorite(project){
+      const favs = new Set(getFavorites());
+      if (favs.has(project)) favs.delete(project);
+      else favs.add(project);
+      setFavorites([...favs]);
+    }
 
-    function getAlertsEnabled() {
+    // =========================
+    // ALERTS
+    // =========================
+    function getAlertsEnabled(){
       return localStorage.getItem(ALERTS_ENABLED_KEY) === "true";
     }
-    function setAlertsEnabled(v) {
+    function setAlertsEnabled(v){
       localStorage.setItem(ALERTS_ENABLED_KEY, v ? "true" : "false");
     }
-    function getAlertsLast() {
-      try {
-        const raw = localStorage.getItem(ALERTS_LAST_KEY);
-        return raw ? JSON.parse(raw) : {};
-      } catch { return {}; }
+    function getAlertsLast(){
+      return loadJSON(ALERTS_LAST_KEY) || {};
     }
-    function setAlertsLast(obj) {
-      localStorage.setItem(ALERTS_LAST_KEY, JSON.stringify(obj));
+    function setAlertsLast(obj){
+      cacheJSON(ALERTS_LAST_KEY, obj);
     }
 
-    function cacheLakeData(data) {
-      cacheJSON(LAST_DATA_KEY, { timestamp: data.timestamp || nowIso(), lakes: data.lakes || [] });
-    }
-    function loadCachedLakeData() {
-      return loadCachedJSON(LAST_DATA_KEY);
-    }
-
-    // =========================
-    // SPONSORS
-    // =========================
-    async function loadSponsors() {
-      try {
-        const resp = await fetch(`${BACKEND_URL}/sponsors`, { cache: "no-store" });
-        if (!resp.ok) throw new Error("sponsors http " + resp.status);
-        const data = await resp.json();
-        sponsorList = Array.isArray(data) ? data : (data.sponsors || []);
-        cacheJSON(SPONSORS_CACHE_KEY, { ts: nowIso(), sponsors: sponsorList });
-        return;
-      } catch {
-        const cached = loadCachedJSON(SPONSORS_CACHE_KEY);
-        sponsorList = cached?.sponsors || [];
+    async function enableAlertsFlow(){
+      if (!("Notification" in window)){
+        alert("Notifications are not supported in this browser.");
+        return false;
       }
-    }
-
-    function pickSponsorForDisplay() {
-      const active = sponsorList.filter(s => s && s.active !== false);
-      if (!active.length) return null;
-
-      const favs = getFavorites();
-      if (favs && favs.length) {
-        for (const fav of favs) {
-          const match = active.find(s => (s.lakes || []).includes(fav));
-          if (match) return match;
-        }
+      let perm = Notification.permission;
+      if (perm !== "granted"){
+        perm = await Notification.requestPermission();
       }
-      return active[Math.floor(Math.random() * active.length)];
+      if (perm !== "granted"){
+        alert("Notifications were blocked. Enable them in browser settings.");
+        return false;
+      }
+      return true;
     }
 
-    function trackSponsorEvent(sponsorId, eventType) {
-      fetch(`${BACKEND_URL}/track`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sponsorId, eventType, ts: nowIso() }),
-      }).catch(() => {});
-    }
+    function maybeNotifyFavorites(lakes){
+      if (!getAlertsEnabled()) return;
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
 
-    function renderSponsorCard(sponsor) {
-      const el = document.getElementById("sponsor-content");
-      if (!el) return;
+      const favs = new Set(getFavorites());
+      if (!favs.size) return;
 
-      if (!sponsor) {
-        el.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-weight:1000; font-size:0.98rem;">Sponsor spot available</div>
-            <div class="subtitle" style="font-size:0.82rem;">
-              Own a marina, bait shop, guide service, or campground? Reach local boaters here.
-            </div>
-          </div>
-        `;
-        return;
+      const lastSent = getAlertsLast();
+      const now = Date.now();
+      const THRESH = 2; // ft
+      const COOLDOWN_MS = 3 * 60 * 60 * 1000; // 3 hours per lake
+
+      for (const lake of lakes){
+        if (!favs.has(lake.project)) continue;
+        const delta = Number(lake.change24h || 0);
+        if (Math.abs(delta) < THRESH) continue;
+
+        const key = lake.project;
+        const lastTime = lastSent[key] || 0;
+        if (now - lastTime < COOLDOWN_MS) continue;
+
+        const body = `Pool: ${formatNumber(lake.todayPool, 1)} ft, 24h Δ: ${formatNumber(delta, 1)} ft`;
+        new Notification(`Lake ${lake.project} changed ${formatNumber(delta, 1)} ft in 24h`, { body });
+
+        lastSent[key] = now;
       }
 
-      const lakesLabel = (sponsor.lakes && sponsor.lakes.length)
-        ? `Serving: ${sponsor.lakes.join(", ")}`
-        : (sponsor.region ? `Serving: ${sponsor.region}` : "");
-
-      const logo = sponsor.logoUrl
-        ? `<img class="sponsor-logo" src="${sponsor.logoUrl}" alt="${safeText(sponsor.name)} logo" />`
-        : `<div class="sponsor-logo" style="display:flex; align-items:center; justify-content:center; font-weight:1000;">
-             ${(safeText(sponsor.name || "S").slice(0,1) || "S").toUpperCase()}
-           </div>`;
-
-      const phoneHref = sponsor.phone ? `tel:${safeText(sponsor.phone).replace(/[^\d+]/g, "")}` : null;
-      const directionsHref = sponsor.directionsUrl || sponsor.googleMapsUrl || null;
-      const websiteHref = sponsor.website || null;
-
-      el.innerHTML = `
-        ${logo}
-        <div style="flex:1 1 auto; min-width: 180px;">
-          <div class="sponsor-title">${safeText(sponsor.name || "Local Sponsor")}</div>
-          <div class="sponsor-sub">${safeText(sponsor.cta || "Fuel • Bait • Ice • Supplies")}</div>
-          <div class="subtitle" style="font-size:0.75rem;">${safeText(lakesLabel)}</div>
-
-          <div class="sponsor-actions">
-            ${phoneHref ? `<a class="pill-btn primary" href="${phoneHref}" data-evt="call">Call</a>` : ""}
-            ${directionsHref ? `<a class="pill-btn" href="${directionsHref}" target="_blank" rel="noopener" data-evt="directions">Directions</a>` : ""}
-            ${websiteHref ? `<a class="pill-btn" href="${websiteHref}" target="_blank" rel="noopener" data-evt="website">Website</a>` : ""}
-          </div>
-        </div>
-      `;
-
-      el.querySelectorAll("[data-evt]").forEach(a => {
-        a.addEventListener("click", () => trackSponsorEvent(sponsor.id || sponsor.name, a.getAttribute("data-evt")));
-      });
-      trackSponsorEvent(sponsor.id || sponsor.name, "view");
-    }
-
-    function updateSponsorPinsOnMap() {
-      if (!map) return;
-      if (sponsorLayer) sponsorLayer.remove();
-      sponsorLayer = L.layerGroup().addTo(map);
-
-      const active = sponsorList.filter(s => s && s.active !== false);
-      active.forEach(s => {
-        const lat = Number(s.lat ?? s.latitude);
-        const lon = Number(s.lon ?? s.lng ?? s.longitude);
-        if (!isFinite(lat) || !isFinite(lon)) return;
-
-        const name = safeText(s.name || "Sponsor");
-        const cta = safeText(s.cta || "");
-        const website = s.website ? `<div style="margin-top:6px;"><a href="${s.website}" target="_blank" rel="noopener">Website</a></div>` : "";
-        const phone = s.phone ? `<div style="margin-top:6px;"><a href="tel:${safeText(s.phone).replace(/[^\d+]/g,"")}">Call</a></div>` : "";
-        const dir = (s.directionsUrl || s.googleMapsUrl)
-          ? `<div style="margin-top:6px;"><a href="${(s.directionsUrl||s.googleMapsUrl)}" target="_blank" rel="noopener">Directions</a></div>`
-          : "";
-
-        const m = L.circleMarker([lat, lon], {
-          radius: 7,
-          weight: 2,
-          color: "#f59e0b",
-          fillColor: "#f59e0b",
-          fillOpacity: 0.9
-        }).addTo(sponsorLayer);
-
-        m.bindPopup(`
-          <div style="font-weight:1000; margin-bottom:4px;">${name}</div>
-          <div style="opacity:0.85;">${cta}</div>
-          ${phone}${dir}${website}
-        `);
-
-        m.on("click", () => trackSponsorEvent(s.id || s.name, "map_pin"));
-      });
-    }
-
-    // =========================
-    // MAP + GPS
-    // =========================
-    function setMapStatus(text) {
-      const el = document.getElementById("map-status");
-      if (el) el.textContent = text;
-    }
-
-    function setupMap() {
-      const defaultLatLng = [37.8393, -84.27];
-      map = L.map("map", { zoomControl: true }).setView(defaultLatLng, 7);
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 18,
-        attribution: '&copy; OpenStreetMap contributors',
-      }).addTo(map);
-
-      setTimeout(() => map.invalidateSize(), 120);
-
-      document.getElementById("center-ky-btn")?.addEventListener("click", () => {
-        map.setView(defaultLatLng, 7);
-      });
-    }
-
-    function ensureUserLayers(lat, lng, accuracyMeters) {
-      if (!map) return;
-      const latlng = [lat, lng];
-
-      if (!userMarker) {
-        userMarker = L.circleMarker(latlng, {
-          radius: 7,
-          weight: 2,
-          color: "#22c55e",
-          fillColor: "#22c55e",
-          fillOpacity: 0.9,
-        }).addTo(map);
-      } else {
-        userMarker.setLatLng(latlng);
-      }
-
-      if (!accuracyCircle) {
-        accuracyCircle = L.circle(latlng, {
-          radius: accuracyMeters || 0,
-          weight: 1,
-          color: "#22c55e",
-          fillColor: "#22c55e",
-          fillOpacity: 0.10,
-        }).addTo(map);
-      } else {
-        accuracyCircle.setLatLng(latlng);
-        accuracyCircle.setRadius(accuracyMeters || 0);
-      }
-    }
-
-    function startGps() {
-      if (!("geolocation" in navigator)) {
-        alert("GPS is not supported in this browser.");
-        return;
-      }
-      if (!map) return;
-
-      setMapStatus("GPS: requesting permission…");
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude, accuracy } = pos.coords;
-          setMapStatus(`GPS: located (±${Math.round(accuracy)}m)`);
-          ensureUserLayers(latitude, longitude, accuracy);
-          map.setView([latitude, longitude], 13);
-        },
-        (err) => {
-          console.warn(err);
-          setMapStatus(`GPS: error (${err.code})`);
-          alert("Could not get GPS location. Please allow location access.");
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
-      );
-
-      if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
-
-      gpsWatchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          const { latitude, longitude, accuracy } = pos.coords;
-          setMapStatus(`GPS: tracking (±${Math.round(accuracy)}m)`);
-          ensureUserLayers(latitude, longitude, accuracy);
-        },
-        (err) => {
-          console.warn(err);
-          setMapStatus(`GPS: tracking error (${err.code})`);
-        },
-        { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
-      );
-    }
-
-    function stopGps() {
-      if (gpsWatchId) {
-        navigator.geolocation.clearWatch(gpsWatchId);
-        gpsWatchId = null;
-      }
-      setMapStatus("GPS: stopped");
-    }
-
-    function setupGpsButtons() {
-      document.getElementById("gps-btn")?.addEventListener("click", startGps);
-      document.getElementById("gps-stop-btn")?.addEventListener("click", stopGps);
+      setAlertsLast(lastSent);
     }
 
     // =========================
     // WEATHER
     // =========================
-    async function loadWeatherByZip(zip) {
-      const titleEl = document.getElementById("weather-title");
-      const metaEl = document.getElementById("weather-meta");
-      const mainEl = document.getElementById("weather-main");
+    async function loadWeatherByZip(zip){
+      const titleEl = $("weatherTitle");
+      const metaEl = $("weatherMeta");
+      const mainEl = $("weatherMain");
 
-      try {
+      try{
         const geoResp = await fetch(`https://api.zippopotam.us/us/${zip}`);
         if (!geoResp.ok) throw new Error("ZIP lookup failed");
         const geo = await geoResp.json();
@@ -1042,13 +647,13 @@
         const precip = meteo.hourly.precipitation || [];
 
         let nowIndex = 0;
-        if (times.length) {
+        if (times.length){
           const now = Date.now();
           let best = 0, bestDiff = Infinity;
-          for (let i = 0; i < times.length; i++) {
+          for (let i=0;i<times.length;i++){
             const t = new Date(times[i]).getTime();
             const d = Math.abs(t - now);
-            if (d < bestDiff) { bestDiff = d; best = i; }
+            if (d < bestDiff){ bestDiff = d; best = i; }
           }
           nowIndex = best;
         }
@@ -1056,424 +661,257 @@
         const nowT = temps[nowIndex] ?? null;
         const nowW = winds[nowIndex] ?? null;
         const high = temps.length ? Math.max(...temps) : null;
-        const low = temps.length ? Math.min(...temps) : null;
-        const rain24 = precip.length ? precip.reduce((a, b) => a + b, 0).toFixed(2) : null;
+        const low  = temps.length ? Math.min(...temps) : null;
+        const rain24 = precip.length ? precip.reduce((a,b)=>a+b,0).toFixed(2) : null;
 
         mainEl.innerHTML = `
           <div>Now: ${nowT != null ? `${Number(nowT).toFixed(0)}°F` : "—"}, Wind: ${nowW != null ? `${Number(nowW).toFixed(0)} mph` : "—"}</div>
           <div>High: ${high != null ? `${Number(high).toFixed(0)}°F` : "—"}, Low: ${low != null ? `${Number(low).toFixed(0)}°F` : "—"}, Rain (24h): ${rain24 != null ? `${rain24}"` : "—"}</div>
         `;
-      } catch (err) {
-        console.error(err);
+      }catch(e){
+        console.error(e);
         titleEl.textContent = "Weather – Unknown";
         metaEl.textContent = "Could not load weather for that ZIP.";
-        mainEl.innerHTML = "<div>Now: —°F, Wind: — mph</div><div>High: —°F, Low: —°F, Rain (24h): —\"</div>";
+        mainEl.innerHTML = `<div>Now: —°F, Wind: — mph</div><div>High: —°F, Low: —°F, Rain (24h): —"</div>`;
       }
     }
 
-    function setupZipForm() {
-      const form = document.getElementById("zip-form");
-      const input = document.getElementById("zip-input");
-
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const zip = input.value.trim();
-        if (/^\d{5}$/.test(zip)) loadWeatherByZip(zip);
-      });
-
-      loadWeatherByZip(input.value.trim() || "40351");
-    }
-
     // =========================
-    // BOAT MODE
+    // MAP + GPS
     // =========================
-    function setupBoatMode() {
-      const toggle = document.getElementById("boat-toggle");
-      toggle.addEventListener("change", () => {
-        document.body.classList.toggle("boat-mode", toggle.checked);
-        if (window.lastLakeData) renderFloodChart(window.lastLakeData);
-        setTimeout(() => { if (map) map.invalidateSize(); }, 150);
+    function setupMap(){
+      const ky = [37.8393, -84.27];
+      map = L.map("map", { zoomControl:true }).setView(ky, 7);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom:18,
+        attribution:'&copy; OpenStreetMap contributors',
+      }).addTo(map);
+
+      sponsorLayer = L.layerGroup().addTo(map);
+      lakeLayer = L.layerGroup().addTo(map);
+
+      setTimeout(()=>map.invalidateSize(), 150);
+
+      $("centerKyBtn").addEventListener("click", ()=>{
+        map.setView(ky, 7);
       });
     }
 
-    // =========================
-    // ALERTS
-    // =========================
-    function setupAlertsToggle() {
-      const toggle = document.getElementById("alerts-toggle");
-      toggle.checked = getAlertsEnabled();
+    function setGpsStatus(t){ $("gpsStatus").textContent = t; }
 
-      toggle.addEventListener("change", async () => {
-        if (toggle.checked) {
-          if (!("Notification" in window)) {
-            alert("Notifications are not supported in this browser.");
-            toggle.checked = false;
-            return;
-          }
-          let perm = Notification.permission;
-          if (perm !== "granted") perm = await Notification.requestPermission();
+    function ensureUserLayers(lat, lon, accuracy){
+      const latlng = [lat, lon];
 
-          if (perm === "granted") setAlertsEnabled(true);
-          else {
-            alert("Notifications were blocked. You can enable them in browser settings.");
-            toggle.checked = false;
-            setAlertsEnabled(false);
-          }
-        } else {
-          setAlertsEnabled(false);
-        }
-      });
-    }
-
-    function maybeNotifyFavorites(lakes) {
-      if (!getAlertsEnabled()) return;
-      if (!("Notification" in window)) return;
-      if (Notification.permission !== "granted") return;
-
-      const favorites = new Set(getFavorites());
-      if (!favorites.size) return;
-
-      const lastSent = getAlertsLast();
-      const now = Date.now();
-
-      for (const lake of lakes) {
-        if (!favorites.has(lake.project)) continue;
-        const delta = Number(lake.change24h || 0);
-        if (Math.abs(delta) < 2) continue;
-
-        const key = lake.project;
-        const lastTime = lastSent[key] || 0;
-        if (now - lastTime < 3 * 60 * 60 * 1000) continue;
-
-        const body = `Pool: ${formatNumber(lake.todayPool, 1)} ft, 24h Δ: ${formatNumber(delta, 1)} ft`;
-        new Notification(`Lake ${lake.project} changed ${formatNumber(delta, 1)} ft in 24h`, { body });
-
-        lastSent[key] = now;
-      }
-      setAlertsLast(lastSent);
-    }
-
-    // =========================
-    // FISH LIMITS
-    // =========================
-    const DEFAULT_FISH_LIMITS = [
-      { key: "Muskie", icon: "🐟", minLabel: '30" min', daily: "1", possession: "2", notes: "Statewide default." },
-      { key: "Bass (Largemouth / Smallmouth / Spotted)", icon: "🎣", minLabel: '12" min (LM/SM), none (Spotted)', daily: "6*", possession: "12*", notes: "*No more than 4 may be smallmouth." },
-      { key: "Crappie", icon: "🐠", minLabel: "No min size (statewide)", daily: "20*", possession: "40*", notes: "*Black & white combined. Special regs exist on some lakes." },
-      { key: "Bluegill", icon: "🐟", minLabel: "No min size", daily: "15", possession: "30", notes: "Panfish daily limit." },
-      { key: "Sauger / Walleye", icon: "🐟", minLabel: '14" min (combined)', daily: "6*", possession: "12*", notes: "*Walleye, sauger, and hybrids combined." }
-    ];
-
-    function setupFishLimitsCard() {
-      const select = document.getElementById("fish-select");
-      const panel = document.getElementById("fish-limits-panel");
-      if (!select || !panel) return;
-
-      select.innerHTML = "";
-      DEFAULT_FISH_LIMITS.forEach((f, idx) => {
-        const opt = document.createElement("option");
-        opt.value = String(idx);
-        opt.textContent = f.key;
-        select.appendChild(opt);
-      });
-
-      function render(idx) {
-        const f = DEFAULT_FISH_LIMITS[idx] || DEFAULT_FISH_LIMITS[0];
-        panel.innerHTML = `
-          <div class="fish-box">
-            <div class="fish-head">
-              <div class="fish-name">
-                <div class="fish-icon">${safeText(f.icon || "🐟")}</div>
-                <div>${safeText(f.key)}</div>
-              </div>
-              <span class="badge ok">${safeText(f.minLabel)}</span>
-            </div>
-
-            <div class="fish-stats">
-              <div class="stat">
-                <div class="label">Daily limit</div>
-                <div class="value">${safeText(f.daily)}</div>
-              </div>
-              <div class="stat">
-                <div class="label">Possession</div>
-                <div class="value">${safeText(f.possession)}</div>
-              </div>
-            </div>
-
-            <div class="fish-notes"><strong>Notes:</strong> ${safeText(f.notes || "—")}</div>
-          </div>
-        `;
+      if (!userMarker){
+        userMarker = L.circleMarker(latlng, {
+          radius:7, weight:2,
+          color:"#22c55e", fillColor:"#22c55e", fillOpacity:0.9
+        }).addTo(map);
+      } else {
+        userMarker.setLatLng(latlng);
       }
 
-      select.addEventListener("change", () => render(Number(select.value)));
-      render(0);
-    }
-
-    // =========================
-    // SPECIAL REGS (modal)
-    // =========================
-    const KDFWR_WID_MAP = {
-      "Kentucky Lake": 64,
-      "Lake Barkley": 66,
-      "Lake Cumberland": 98,
-      "Lake Cumberland - Upper": 345
-    };
-
-    const REG_SPECIES_FILTERS = [
-      { key: "Muskellunge", match: ["MUSKELLUNGE", "MUSKIE"] },
-      { key: "Bass", match: ["LARGEMOUTH BASS", "SMALLMOUTH BASS", "SPOTTED BASS", "KENTUCKY BASS", "BLACK BASS"] },
-      { key: "Crappie", match: ["BLACK CRAPPIE", "WHITE CRAPPIE", "CRAPPIE"] },
-      { key: "Bluegill", match: ["BLUEGILL", "SUNFISH"] },
-      { key: "Sauger / Walleye", match: ["WALLEYE", "SAUGER", "SAUGEYE"] }
-    ];
-
-    function getRegsCache() {
-      const cached = loadCachedJSON(REGS_CACHE_KEY);
-      return cached && typeof cached === "object" ? cached : { ts: null, items: {} };
-    }
-    function setRegsCache(cacheObj) { cacheJSON(REGS_CACHE_KEY, cacheObj); }
-
-    function officialRegsUrlForWid(wid) {
-      return `https://app.fw.ky.gov/fisheries/waterbodydetail.aspx?wid=${encodeURIComponent(wid)}`;
-    }
-
-    function projectToWid(projectName) {
-      if (!projectName) return null;
-      if (KDFWR_WID_MAP[projectName]) return KDFWR_WID_MAP[projectName];
-      const p = projectName.toLowerCase();
-      if (p.includes("kentucky lake")) return 64;
-      if (p.includes("barkley")) return 66;
-      if (p.includes("cumberland") && p.includes("upper")) return 345;
-      if (p.includes("cumberland")) return 98;
-      return null;
-    }
-
-    function normalize(s) { return safeText(s).trim().toUpperCase(); }
-
-    function filterSpeciesRows(rows) {
-      const out = [];
-      for (const r of rows) {
-        const spec = normalize(r.species);
-        const reg = safeText(r.reg).trim();
-        const hit = REG_SPECIES_FILTERS.find(f => f.match.some(m => spec.includes(m)));
-        if (!hit) continue;
-        out.push({ species: r.species, regulation: reg });
-      }
-
-      const seen = new Set();
-      const uniq = [];
-      for (const r of out) {
-        const key = normalize(r.species);
-        if (seen.has(key)) continue;
-        seen.add(key);
-        uniq.push(r);
-      }
-      return uniq;
-    }
-
-    async function fetchSpecialRegsForWid(wid) {
-      const url = officialRegsUrlForWid(wid);
-      const resp = await fetch(url, { cache: "no-store" });
-      if (!resp.ok) throw new Error(`regs http ${resp.status}`);
-      const html = await resp.text();
-
-      const doc = new DOMParser().parseFromString(html, "text/html");
-      const rows = [];
-
-      doc.querySelectorAll("table tr").forEach(tr => {
-        const tds = tr.querySelectorAll("td");
-        if (tds.length >= 2) {
-          const species = tds[0].textContent?.trim() || "";
-          const reg = tds[1].textContent?.trim() || "";
-          if (species && reg) rows.push({ species, reg });
-        }
-      });
-
-      return filterSpeciesRows(rows.map(r => ({ species: r.species, reg: r.reg })));
-    }
-
-    async function getLakeSpecialRegs(projectName, forceRefresh = false) {
-      const wid = projectToWid(projectName);
-      if (!wid) return { wid: null, url: null, rows: [], source: "unknown" };
-
-      const url = officialRegsUrlForWid(wid);
-      const cache = getRegsCache();
-      const cacheKey = String(wid);
-      const cached = cache.items?.[cacheKey];
-
-      const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
-      const cachedOk = cached?.ts && (Date.now() - new Date(cached.ts).getTime() < maxAgeMs);
-
-      if (!forceRefresh && cachedOk && Array.isArray(cached.rows)) {
-        return { wid, url, rows: cached.rows, source: "cache" };
-      }
-
-      try {
-        const rows = await fetchSpecialRegsForWid(wid);
-        cache.items = cache.items || {};
-        cache.items[cacheKey] = { ts: nowIso(), rows };
-        cache.ts = nowIso();
-        setRegsCache(cache);
-        return { wid, url, rows, source: "live" };
-      } catch {
-        if (cached?.rows?.length) return { wid, url, rows: cached.rows, source: "stale_cache" };
-        return { wid, url, rows: [], source: "failed" };
+      if (!accuracyCircle){
+        accuracyCircle = L.circle(latlng, {
+          radius: accuracy || 0,
+          weight:1, color:"#22c55e",
+          fillColor:"#22c55e", fillOpacity:0.10
+        }).addTo(map);
+      } else {
+        accuracyCircle.setLatLng(latlng);
+        accuracyCircle.setRadius(accuracy || 0);
       }
     }
 
-    function openLakeModal(lakeObj) {
-      selectedLake = lakeObj;
-
-      const backdrop = document.getElementById("lake-modal-backdrop");
-      const title = document.getElementById("lake-modal-title");
-      const subtitle = document.getElementById("lake-modal-subtitle");
-      const stats = document.getElementById("lake-modal-stats");
-      const regsBody = document.getElementById("lake-regs-body");
-      const regsStatus = document.getElementById("lake-regs-status");
-      const regsLink = document.getElementById("lake-regs-link");
-
-      title.textContent = safeText(lakeObj.project || "Lake Details");
-      subtitle.textContent = safeText(lakeObj.basin || "—");
-
-      stats.innerHTML = `
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px;">
-          <div class="fish-box">
-            <div class="subtitle" style="font-size:0.75rem;">Pool</div>
-            <div style="font-size:1.05rem; font-weight:1000;">${formatNumber(lakeObj.todayPool, 1)} ft</div>
-          </div>
-          <div class="fish-box">
-            <div class="subtitle" style="font-size:0.75rem;">Deviation</div>
-            <div style="font-size:1.05rem; font-weight:1000;" class="${classifyDelta(lakeObj.deviation)}">${formatNumber(lakeObj.deviation, 1)} ft</div>
-          </div>
-          <div class="fish-box">
-            <div class="subtitle" style="font-size:0.75rem;">24h Δ</div>
-            <div style="font-size:1.05rem; font-weight:1000;" class="${classifyDelta(lakeObj.change24h)}">${formatNumber(lakeObj.change24h, 1)} ft</div>
-          </div>
-          <div class="fish-box">
-            <div class="subtitle" style="font-size:0.75rem;">Flood Util</div>
-            <div style="font-size:1.05rem; font-weight:1000;">${formatNumber(lakeObj.percentUtil, 2)}%</div>
-          </div>
-        </div>
-      `;
-
-      regsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
-      regsStatus.textContent = "Loading…";
-
-      const wid = projectToWid(lakeObj.project);
-      regsLink.href = wid ? officialRegsUrlForWid(wid) : "https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx";
-
-      // only refresh button wiring (no quick actions wiring)
-      document.getElementById("lake-regs-refresh").onclick = () => loadLakeRegsIntoModal(lakeObj, true);
-
-      backdrop.style.display = "flex";
-      loadLakeRegsIntoModal(lakeObj, false);
-    }
-
-    function closeLakeModal() {
-      document.getElementById("lake-modal-backdrop").style.display = "none";
-      selectedLake = null;
-    }
-
-    async function loadLakeRegsIntoModal(lakeObj, forceRefresh) {
-      const regsBody = document.getElementById("lake-regs-body");
-      const regsStatus = document.getElementById("lake-regs-status");
-
-      regsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
-      regsStatus.textContent = forceRefresh ? "Refreshing…" : "Loading…";
-
-      const res = await getLakeSpecialRegs(lakeObj.project, forceRefresh);
-
-      const srcLabel =
-        res.source === "live" ? "Loaded from official site" :
-        res.source === "cache" ? "Loaded from cache" :
-        res.source === "stale_cache" ? "Using cached regs (offline/blocked)" :
-        res.source === "failed" ? "Could not fetch regs (tap Open official regs)" :
-        "Unknown";
-
-      regsStatus.textContent = srcLabel;
-
-      if (!res.rows || !res.rows.length) {
-        regsBody.innerHTML = `<tr><td colspan="2">No special regs found for your selected species, or the official page couldn't be fetched. Use the Official link to verify.</td></tr>`;
+    function startGPS(){
+      if (!("geolocation" in navigator)){
+        alert("GPS not supported in this browser.");
         return;
       }
+      setGpsStatus("GPS: requesting permission…");
 
-      regsBody.innerHTML = "";
-      res.rows.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td style="font-weight:1000;">${safeText(r.species)}</td>
-          <td>${safeText(r.regulation)}</td>
-        `;
-        regsBody.appendChild(tr);
-      });
+      navigator.geolocation.getCurrentPosition(
+        (pos)=>{
+          const { latitude, longitude, accuracy } = pos.coords;
+          setGpsStatus(`GPS: located (±${Math.round(accuracy)}m)`);
+          ensureUserLayers(latitude, longitude, accuracy);
+          map.setView([latitude, longitude], 13);
+        },
+        (err)=>{
+          console.warn(err);
+          setGpsStatus(`GPS: error (${err.code})`);
+          alert("Could not get GPS location. Please allow location access.");
+        },
+        { enableHighAccuracy:true, timeout:10000, maximumAge:15000 }
+      );
+
+      if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+
+      gpsWatchId = navigator.geolocation.watchPosition(
+        (pos)=>{
+          const { latitude, longitude, accuracy } = pos.coords;
+          setGpsStatus(`GPS: tracking (±${Math.round(accuracy)}m)`);
+          ensureUserLayers(latitude, longitude, accuracy);
+        },
+        (err)=>{
+          console.warn(err);
+          setGpsStatus(`GPS: tracking error (${err.code})`);
+        },
+        { enableHighAccuracy:true, maximumAge:5000, timeout:15000 }
+      );
+    }
+
+    function stopGPS(){
+      if (gpsWatchId){
+        navigator.geolocation.clearWatch(gpsWatchId);
+        gpsWatchId = null;
+      }
+      setGpsStatus("GPS: stopped");
+    }
+
+    function renderSponsorPins(){
+      if (!map || !sponsorLayer) return;
+      sponsorLayer.clearLayers();
+
+      const active = (sponsorList || []).filter(s => s && s.active !== false);
+      for (const s of active){
+        const lat = Number(s.lat ?? s.latitude);
+        const lon = Number(s.lon ?? s.lng ?? s.longitude);
+        if (!isFinite(lat) || !isFinite(lon)) continue;
+
+        const name = safeText(s.name || "Sponsor");
+        const cta  = safeText(s.cta || "");
+        const phone = s.phone ? `<div style="margin-top:6px;"><a href="tel:${safeText(s.phone).replace(/[^\d+]/g,"")}">Call</a></div>` : "";
+        const web = s.website ? `<div style="margin-top:6px;"><a href="${s.website}" target="_blank" rel="noopener">Website</a></div>` : "";
+        const dir = (s.directionsUrl || s.googleMapsUrl)
+          ? `<div style="margin-top:6px;"><a href="${(s.directionsUrl||s.googleMapsUrl)}" target="_blank" rel="noopener">Directions</a></div>`
+          : "";
+
+        const m = L.circleMarker([lat, lon], {
+          radius:7, weight:2,
+          color:"#f59e0b", fillColor:"#f59e0b", fillOpacity:0.9
+        }).addTo(sponsorLayer);
+
+        m.bindPopup(`
+          <div style="font-weight:900; margin-bottom:4px;">${name}</div>
+          <div style="opacity:0.85;">${cta}</div>
+          ${phone}${dir}${web}
+        `);
+      }
+    }
+
+    function renderLakePins(lakes){
+      if (!map || !lakeLayer) return;
+      lakeLayer.clearLayers();
+
+      // Only plot if coordinates exist on lake objects
+      let plotted = 0;
+      for (const l of (lakes || [])){
+        const lat = Number(l.lat ?? l.latitude);
+        const lon = Number(l.lon ?? l.lng ?? l.longitude);
+        if (!isFinite(lat) || !isFinite(lon)) continue;
+
+        plotted++;
+        const m = L.circleMarker([lat, lon], {
+          radius:6, weight:2,
+          color: getFavorites().includes(l.project) ? "#fbbf24" : "#3b82f6",
+          fillColor: getFavorites().includes(l.project) ? "#fbbf24" : "#3b82f6",
+          fillOpacity:0.85
+        }).addTo(lakeLayer);
+
+        m.bindPopup(`<div style="font-weight:900;">${safeText(l.project)}</div><div style="opacity:.8;">${safeText(l.basin||"")}</div>`);
+        m.on("click", ()=> openLakeModal(l));
+      }
+
+      // No error if none plotted; it just means no coords in data
+      // (If you want: we can add a hardcoded lake coords list later.)
+    }
+
+    // =========================
+    // SPONSORS (backend)
+    // =========================
+    async function loadSponsors(){
+      try{
+        const resp = await fetch(`${BACKEND_URL}/sponsors`, { cache:"no-store" });
+        if (!resp.ok) throw new Error("Sponsors HTTP " + resp.status);
+        const data = await resp.json();
+        sponsorList = Array.isArray(data) ? data : (data.sponsors || []);
+        cacheJSON(SPONSORS_CACHE_KEY, { ts: nowIso(), sponsors: sponsorList });
+      }catch(e){
+        console.warn("Sponsors fetch failed, using cache if any.", e);
+        const cached = loadJSON(SPONSORS_CACHE_KEY);
+        sponsorList = cached?.sponsors || [];
+      }
+      renderSponsorPins();
     }
 
     // =========================
     // LAKES
     // =========================
-    async function loadLakes() {
-      const tbody = document.getElementById("lakes-body");
-      const updatedLabel = document.getElementById("updated-label");
-      const statusLine = document.getElementById("status-line");
+    function cacheLakes(data){
+      cacheJSON(LAST_DATA_KEY, { ts: data.timestamp || nowIso(), lakes: data.lakes || [] });
+    }
+    function loadCachedLakes(){
+      return loadJSON(LAST_DATA_KEY);
+    }
 
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="10" style="padding: 10px 8px; font-size:0.85rem">
-            Loading live lake data…
-          </td>
-        </tr>`;
+    async function loadLakes(){
+      const tbody = $("lakesBody");
+      const updatedLabel = $("updatedLabel");
+      const statusLine = $("statusLine");
+
+      tbody.innerHTML = `<tr><td colspan="10" style="padding:10px 8px;">Loading…</td></tr>`;
 
       let data = null;
       let fromCache = false;
 
-      try {
-        const resp = await fetch(`${BACKEND_URL}/lakes`, { cache: "no-store" });
-        if (!resp.ok) throw new Error(`Backend HTTP ${resp.status}`);
+      try{
+        const resp = await fetch(`${BACKEND_URL}/lakes`, { cache:"no-store" });
+        if (!resp.ok) throw new Error("Lakes HTTP " + resp.status);
         data = await resp.json();
         if (data.error) throw new Error(data.message || "Backend error");
-        cacheLakeData(data);
-      } catch (err) {
-        console.error("Live fetch failed, trying cache:", err);
-        const cached = loadCachedLakeData();
-        if (cached && cached.lakes && cached.lakes.length) {
+        cacheLakes(data);
+      }catch(e){
+        console.warn("Live lakes failed, trying cache:", e);
+        const cached = loadCachedLakes();
+        if (cached?.lakes?.length){
           data = cached;
           fromCache = true;
         } else {
           updatedLabel.textContent = "Updated: error";
           statusLine.textContent = "Could not reach backend — and no cached data available.";
           statusLine.classList.remove("ok");
-          statusLine.classList.add("error");
+          statusLine.classList.add("err");
           return;
         }
       }
 
       const lakes = data.lakes || [];
-      window.lastLakeData = lakes;
+      lastLakes = lakes;
 
-      const favorites = getFavorites();
-      const favSet = new Set(favorites);
-
-      lakes.sort((a, b) => {
+      const favSet = new Set(getFavorites());
+      lakes.sort((a,b)=>{
         const af = favSet.has(a.project);
         const bf = favSet.has(b.project);
         if (af !== bf) return af ? -1 : 1;
-        const ba = (a.basin || "").localeCompare(b.basin || "");
+        const ba = (a.basin||"").localeCompare(b.basin||"");
         if (ba !== 0) return ba;
-        return (a.project || "").localeCompare(b.project || "");
+        return (a.project||"").localeCompare(b.project||"");
       });
 
       tbody.innerHTML = "";
-      for (const lake of lakes) {
+      for (const lake of lakes){
         const tr = document.createElement("tr");
-        tr.classList.add("clickable-row");
+        tr.className = "row-click";
 
+        const isFav = favSet.has(lake.project);
         const devClass = classifyDelta(lake.deviation);
         const d24Class = classifyDelta(lake.change24h);
-        const isFav = favSet.has(lake.project);
 
         tr.innerHTML = `
           <td class="fav-cell">
-            <button class="fav-btn ${isFav ? "favorited" : ""}" data-project="${safeText(lake.project)}" title="Favorite">
+            <button class="fav-btn ${isFav ? "on" : ""}" title="Favorite" type="button">
               ${isFav ? "★" : "☆"}
             </button>
           </td>
@@ -1488,172 +926,207 @@
           <td class="num">${formatNumber(lake.percentUtil, 2)}</td>
         `;
 
-        tr.querySelector(".fav-btn").addEventListener("click", (e) => {
+        // favorite button
+        tr.querySelector(".fav-btn").addEventListener("click", (e)=>{
           e.stopPropagation();
-          const project = e.currentTarget.getAttribute("data-project");
-          const favs = new Set(getFavorites());
-          if (favs.has(project)) favs.delete(project);
-          else favs.add(project);
-          saveFavorites(Array.from(favs));
-          renderSponsorCard(pickSponsorForDisplay());
-          loadLakes();
+          toggleFavorite(lake.project);
+          loadLakes();          // refresh ordering + stars
         });
 
-        tr.addEventListener("click", () => openLakeModal(lake));
+        tr.addEventListener("click", ()=> openLakeModal(lake));
+
         tbody.appendChild(tr);
       }
 
+      // Status
       const ts = data.timestamp ? new Date(data.timestamp) : new Date();
       updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
-
-      if (fromCache) {
+      if (fromCache){
         statusLine.textContent = `Using cached data (${lakes.length} lakes) – offline`;
         statusLine.classList.remove("ok");
-        statusLine.classList.add("error");
+        statusLine.classList.add("err");
       } else {
         statusLine.textContent = `Loaded ${lakes.length} lakes`;
-        statusLine.classList.remove("error");
+        statusLine.classList.remove("err");
         statusLine.classList.add("ok");
       }
 
-      renderFloodChart(lakes);
+      // Pins (if coords exist)
+      renderLakePins(lakes);
+
+      // Alerts
       maybeNotifyFavorites(lakes);
-      renderSponsorCard(pickSponsorForDisplay());
     }
 
     // =========================
-    // CHART
+    // OFFICIAL REGS LINK
     // =========================
-    function renderFloodChart(lakes) {
-      const canvas = document.getElementById("floodChart");
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
+    // If you later build a true lake->wid map, drop it here.
+    // For now: open statewide limits page (always works).
+    function officialRegsUrlForLake(lake){
+      // OPTIONAL: if your lake objects include a direct official URL:
+      if (lake && lake.regsUrl) return lake.regsUrl;
+      return "https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx";
+    }
 
-      const metric = currentChartMetric;
-      const metricConfig = {
-        percentUtil: { label: "% Utilized", decimals: 2 },
-        todayPool: { label: "Pool Elevation (ft)", decimals: 1 },
-        deviation: { label: "Deviation (ft)", decimals: 1 },
-        inflow: { label: "Inflow (cfs)", decimals: 0 },
-        outflow: { label: "Outflow (cfs)", decimals: 0 },
+    // =========================
+    // MODAL + REPORT
+    // =========================
+    function openLakeModal(lake){
+      selectedLake = lake;
+
+      $("lakeModalTitle").textContent = safeText(lake.project || "Lake");
+      $("lakeModalSubtitle").textContent = safeText(lake.basin || "—");
+
+      $("lakeModalStats").innerHTML = `
+        <div class="stat">
+          <div class="label">Pool</div>
+          <div class="value">${formatNumber(lake.todayPool, 1)} ft</div>
+        </div>
+        <div class="stat">
+          <div class="label">Deviation</div>
+          <div class="value ${classifyDelta(lake.deviation)}">${formatNumber(lake.deviation, 1)} ft</div>
+        </div>
+        <div class="stat">
+          <div class="label">24h Δ</div>
+          <div class="value ${classifyDelta(lake.change24h)}">${formatNumber(lake.change24h, 1)} ft</div>
+        </div>
+        <div class="stat">
+          <div class="label">Flood Util</div>
+          <div class="value">${formatNumber(lake.percentUtil, 2)}%</div>
+        </div>
+      `;
+
+      $("officialRegsLink").href = officialRegsUrlForLake(lake);
+
+      // reset report UI
+      $("reportBox").style.display = "none";
+      $("reportStatus").textContent = "";
+      $("reportText").value = "";
+
+      $("lakeModalBg").style.display = "flex";
+      $("lakeModalBg").setAttribute("aria-hidden", "false");
+    }
+
+    function closeLakeModal(){
+      $("lakeModalBg").style.display = "none";
+      $("lakeModalBg").setAttribute("aria-hidden", "true");
+      selectedLake = null;
+    }
+
+    function buildReportPayload(){
+      const lake = selectedLake || {};
+      return {
+        ts: nowIso(),
+        project: lake.project || "",
+        basin: lake.basin || "",
+        todayPool: lake.todayPool,
+        deviation: lake.deviation,
+        change24h: lake.change24h,
+        inflow: lake.inflow,
+        outflow: lake.outflow,
+        percentUtil: lake.percentUtil,
+        message: $("reportText").value.trim()
       };
-      const cfg = metricConfig[metric] || metricConfig.percentUtil;
-
-      const usable = (lakes || [])
-        .filter(l => l && l[metric] !== null && l[metric] !== undefined && !isNaN(l[metric]))
-        .sort((a, b) => (a[metric] || 0) - (b[metric] || 0));
-
-      const labels = usable.map(l => l.project);
-      const values = usable.map(l => l[metric]);
-
-      if (floodChart) floodChart.destroy();
-
-      const isBoat = document.body.classList.contains("boat-mode");
-      const axisColor = isBoat ? "#020617" : "#E8F0FF";
-      const gridColor = isBoat ? "rgba(15, 23, 42, 0.25)" : "rgba(232, 240, 255, 0.2)";
-      const labelColor = isBoat ? "#020617" : "#FFFFFF";
-
-      floodChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [{
-            label: cfg.label,
-            data: values,
-            backgroundColor: isBoat ? "#0284c7" : "#3b82f6",
-            borderRadius: 4,
-            barThickness: 14,
-          }],
-        },
-        options: {
-          indexAxis: "y",
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: axisColor, font: { size: 12, weight: "900" } } },
-            tooltip: {
-              callbacks: { label: (c) => `${cfg.label}: ${formatNumber(c.parsed.x, cfg.decimals)}` },
-              titleColor: "#0B1020",
-              bodyColor: "#0B1020",
-              backgroundColor: "#E8F0FF",
-              borderColor: "#4FC3F7",
-              borderWidth: 1
-            }
-          },
-          scales: {
-            x: { ticks: { color: axisColor }, grid: { color: gridColor } },
-            y: { ticks: { color: labelColor, font: { weight: "900" } }, grid: { color: "rgba(148,163,184,0.10)" } }
-          }
-        }
-      });
     }
 
-    function setupChartMetricSelector() {
-      const select = document.getElementById("chart-metric");
-      select.addEventListener("change", () => {
-        currentChartMetric = select.value;
-        if (window.lastLakeData) renderFloodChart(window.lastLakeData);
-      });
+    async function sendReport(){
+      const status = $("reportStatus");
+      const payload = buildReportPayload();
+      if (!payload.message){
+        status.textContent = "Please type a short description first.";
+        return;
+      }
+
+      status.textContent = "Sending…";
+      try{
+        const resp = await fetch(`${BACKEND_URL}/report`, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        status.textContent = "Sent! Thank you.";
+      }catch(e){
+        console.warn("Report send failed:", e);
+        status.textContent = "Could not send to backend. Click Copy and send it to yourself / your admin inbox.";
+      }
     }
 
-    // =========================
-    // DISCLAIMER MODAL
-    // =========================
-    function setupDisclaimerModal() {
-      const backdrop = document.getElementById("disclaimer-modal-backdrop");
-      const btn = document.getElementById("disclaimer-accept-btn");
-
-      const accepted = localStorage.getItem(DISCLAIMER_KEY) === "true";
-      if (!accepted) backdrop.style.display = "flex";
-
-      btn.addEventListener("click", () => {
-        localStorage.setItem(DISCLAIMER_KEY, "true");
-        backdrop.style.display = "none";
-      });
-    }
-
-    // =========================
-    // LAKE MODAL WIRING
-    // =========================
-    function setupLakeModal() {
-      document.getElementById("lake-modal-close").addEventListener("click", closeLakeModal);
-      document.getElementById("lake-modal-backdrop").addEventListener("click", (e) => {
-        if (e.target.id === "lake-modal-backdrop") closeLakeModal();
-      });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeLakeModal();
-      });
-    }
-
-    // =========================
-    // SERVICE WORKER
-    // =========================
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/service-worker.js").catch(() => {});
-      });
+    async function copyReport(){
+      const payload = buildReportPayload();
+      const text = `KY Lake Levels Report\nTime: ${payload.ts}\nLake: ${payload.project}\nBasin: ${payload.basin}\nPool: ${payload.todayPool}\nDev: ${payload.deviation}\n24h: ${payload.change24h}\nInflow: ${payload.inflow}\nOutflow: ${payload.outflow}\nUtil: ${payload.percentUtil}\n\nMessage:\n${payload.message || "(no message)"}\n`;
+      try{
+        await navigator.clipboard.writeText(text);
+        $("reportStatus").textContent = "Copied to clipboard.";
+      }catch{
+        $("reportStatus").textContent = "Clipboard blocked by browser. Select the text and copy manually.";
+        $("reportText").value = text;
+      }
     }
 
     // =========================
     // INIT
     // =========================
-    document.addEventListener("DOMContentLoaded", async () => {
-      setupBoatMode();
-      setupZipForm();
-      setupAlertsToggle();
-      setupChartMetricSelector();
-      setupDisclaimerModal();
-      setupLakeModal();
+    document.addEventListener("DOMContentLoaded", ()=>{
+      // Day/Night toggle
+      $("dayToggle").addEventListener("change", (e)=>{
+        document.body.classList.toggle("day-mode", e.target.checked);
+        setTimeout(()=>{ if(map) map.invalidateSize(); }, 150);
+      });
 
+      // Alerts toggle
+      $("alertsToggle").checked = getAlertsEnabled();
+      $("alertsToggle").addEventListener("change", async (e)=>{
+        if (e.target.checked){
+          const ok = await enableAlertsFlow();
+          if (ok){
+            setAlertsEnabled(true);
+          } else {
+            e.target.checked = false;
+            setAlertsEnabled(false);
+          }
+        } else {
+          setAlertsEnabled(false);
+        }
+      });
+
+      // ZIP form
+      $("zipForm").addEventListener("submit", (e)=>{
+        e.preventDefault();
+        const zip = $("zipInput").value.trim();
+        if (/^\d{5}$/.test(zip)) loadWeatherByZip(zip);
+      });
+      loadWeatherByZip($("zipInput").value.trim() || "40351");
+
+      // Map + GPS
       setupMap();
-      setupGpsButtons();
+      $("gpsBtn").addEventListener("click", startGPS);
+      $("gpsStopBtn").addEventListener("click", stopGPS);
 
-      await loadSponsors();
-      renderSponsorCard(pickSponsorForDisplay());
-      updateSponsorPinsOnMap();
+      // Modal
+      $("lakeModalClose").addEventListener("click", closeLakeModal);
+      $("lakeModalBg").addEventListener("click", (e)=>{
+        if (e.target.id === "lakeModalBg") closeLakeModal();
+      });
+      document.addEventListener("keydown", (e)=>{
+        if (e.key === "Escape") closeLakeModal();
+      });
 
-      setupFishLimitsCard();
+      // Report UI
+      $("reportBtn").addEventListener("click", ()=>{
+        const box = $("reportBox");
+        box.style.display = (box.style.display === "none" || !box.style.display) ? "block" : "none";
+      });
+      $("sendReportBtn").addEventListener("click", sendReport);
+      $("copyReportBtn").addEventListener("click", copyReport);
+
+      // Load sponsors + lakes
+      loadSponsors();
       loadLakes();
+
+      // Refresh lakes periodically
+      setInterval(loadLakes, 5 * 60 * 1000);
     });
   </script>
 </body>
