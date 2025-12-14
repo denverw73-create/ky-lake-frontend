@@ -411,26 +411,6 @@
       padding-top: 10px;
       border-top: 1px dashed rgba(148,163,184,0.18);
     }
-    .regs-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    .regs-table th, .regs-table td {
-      padding: 8px 8px;
-      border-bottom: 1px solid rgba(148,163,184,0.16);
-      vertical-align: top;
-      white-space: normal;
-    }
-    .tag {
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.2);
-      background: rgba(59,130,246,0.10);
-      color: var(--text-main);
-      font-size: 0.75rem;
-      font-weight: 950;
-    }
-    .tag.warn { background: rgba(245, 158, 11, 0.16); }
 
     /* Footer */
     .disclaimer-footer {
@@ -463,7 +443,7 @@
       <div class="title-row">
         <div>
           <h1>KY Lake Levels</h1>
-          <div class="subtitle">Live levels, maps, sponsors, and fish regs for your favorite KY waters. Always wear your life jacket while on the water. Be responsible, Be safe.  </div>
+          <div class="subtitle">Live levels, maps, sponsors, and fish regs for your favorite KY waters. Always wear your life jacket while on the water. Be responsible, Be safe.</div>
         </div>
         <div class="status-pill">
           <strong id="updated-label">Updated: —</strong>
@@ -547,7 +527,7 @@
           <div>
             <h2 style="margin:0;">KY Fish Size & Creel Limits</h2>
             <div class="subtitle" style="margin-top:4px;">
-              Statewide defaults (quick reference). Tap a lake row to view special regulations for that water.
+              Statewide defaults (quick reference).
             </div>
           </div>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -561,7 +541,7 @@
         <div id="fish-limits-panel" class="fish-grid"></div>
 
         <div class="subtitle" style="margin-top:10px; font-size:0.75rem;">
-          Always verify special regs for the specific waterbody (KDFWR). If in doubt, release the fish.
+          Always verify regulations for the specific waterbody (KDFWR). If in doubt, release the fish.
         </div>
       </section>
 
@@ -605,7 +585,7 @@
               </select>
             </div>
           </div>
-          <div class="chart-subtitle">Tap a lake row for special regulations.</div>
+          <div class="chart-subtitle">Tap a lake row for details.</div>
           <div class="chart-container">
             <canvas id="floodChart"></canvas>
           </div>
@@ -618,7 +598,7 @@
     </footer>
   </div>
 
-  <!-- Lake Detail Modal (NO QUICK ACTIONS SECTION) -->
+  <!-- Lake Detail Modal (REMOVED special regs table; KEEP official link) -->
   <div id="lake-modal-backdrop" class="modal-backdrop">
     <div class="modal">
       <div class="modal-header">
@@ -632,36 +612,10 @@
       <div class="modal-body">
         <div id="lake-modal-stats"></div>
 
-        <div class="modal-section">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <span class="tag warn">Special regulations</span>
-              <span class="subtitle" id="lake-regs-status">Loading…</span>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <a id="lake-regs-link" class="pill-btn" href="#" target="_blank" rel="noopener">Open official regs</a>
-              <button id="lake-regs-refresh" class="pill-btn" type="button">Refresh</button>
-            </div>
-          </div>
-
-          <div style="margin-top:10px;">
-            <table class="regs-table">
-              <thead>
-                <tr>
-                  <th style="width:34%;">Species</th>
-                  <th>Regulation</th>
-                </tr>
-              </thead>
-              <tbody id="lake-regs-body">
-                <tr><td colspan="2">Loading…</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="subtitle" style="margin-top:8px;">
-            Showing only your selected species (Muskie, Bass, Crappie, Bluegill, Sauger/Walleye).
-            If a row says “Statewide regs apply”, use the statewide card above.
-          </div>
+        <div class="modal-section" style="display:flex; justify-content:flex-end;">
+          <a id="lake-regs-link" class="pill-btn primary" href="#" target="_blank" rel="noopener">
+            Open official regs
+          </a>
         </div>
       </div>
     </div>
@@ -700,7 +654,6 @@
     const ALERTS_LAST_KEY = "kyLakeAlertsLast";
     const DISCLAIMER_KEY = "kyLakeDisclaimerAccepted";
     const SPONSORS_CACHE_KEY = "kyLakeSponsorsCache_v1";
-    const REGS_CACHE_KEY = "kyLakeRegsCache_v1";
 
     let floodChart = null;
     window.lastLakeData = null;
@@ -773,6 +726,31 @@
     }
     function loadCachedLakeData() {
       return loadCachedJSON(LAST_DATA_KEY);
+    }
+
+    // =========================
+    // OFFICIAL REGS LINK (lake-specific WID mapping)
+    // =========================
+    const KDFWR_WID_MAP = {
+      "Kentucky Lake": 64,
+      "Lake Barkley": 66,
+      "Lake Cumberland": 98,
+      "Lake Cumberland - Upper": 345
+    };
+
+    function officialRegsUrlForWid(wid) {
+      return `https://app.fw.ky.gov/fisheries/waterbodydetail.aspx?wid=${encodeURIComponent(wid)}`;
+    }
+
+    function projectToWid(projectName) {
+      if (!projectName) return null;
+      if (KDFWR_WID_MAP[projectName]) return KDFWR_WID_MAP[projectName];
+      const p = projectName.toLowerCase();
+      if (p.includes("kentucky lake")) return 64;
+      if (p.includes("barkley")) return 66;
+      if (p.includes("cumberland") && p.includes("upper")) return 345;
+      if (p.includes("cumberland")) return 98;
+      return null;
     }
 
     // =========================
@@ -1210,117 +1188,8 @@
     }
 
     // =========================
-    // SPECIAL REGS (modal)
+    // LAKE MODAL (NO SPECIAL REGS TABLE)
     // =========================
-    const KDFWR_WID_MAP = {
-      "Kentucky Lake": 64,
-      "Lake Barkley": 66,
-      "Lake Cumberland": 98,
-      "Lake Cumberland - Upper": 345
-    };
-
-    const REG_SPECIES_FILTERS = [
-      { key: "Muskellunge", match: ["MUSKELLUNGE", "MUSKIE"] },
-      { key: "Bass", match: ["LARGEMOUTH BASS", "SMALLMOUTH BASS", "SPOTTED BASS", "KENTUCKY BASS", "BLACK BASS"] },
-      { key: "Crappie", match: ["BLACK CRAPPIE", "WHITE CRAPPIE", "CRAPPIE"] },
-      { key: "Bluegill", match: ["BLUEGILL", "SUNFISH"] },
-      { key: "Sauger / Walleye", match: ["WALLEYE", "SAUGER", "SAUGEYE"] }
-    ];
-
-    function getRegsCache() {
-      const cached = loadCachedJSON(REGS_CACHE_KEY);
-      return cached && typeof cached === "object" ? cached : { ts: null, items: {} };
-    }
-    function setRegsCache(cacheObj) { cacheJSON(REGS_CACHE_KEY, cacheObj); }
-
-    function officialRegsUrlForWid(wid) {
-      return `https://app.fw.ky.gov/fisheries/waterbodydetail.aspx?wid=${encodeURIComponent(wid)}`;
-    }
-
-    function projectToWid(projectName) {
-      if (!projectName) return null;
-      if (KDFWR_WID_MAP[projectName]) return KDFWR_WID_MAP[projectName];
-      const p = projectName.toLowerCase();
-      if (p.includes("kentucky lake")) return 64;
-      if (p.includes("barkley")) return 66;
-      if (p.includes("cumberland") && p.includes("upper")) return 345;
-      if (p.includes("cumberland")) return 98;
-      return null;
-    }
-
-    function normalize(s) { return safeText(s).trim().toUpperCase(); }
-
-    function filterSpeciesRows(rows) {
-      const out = [];
-      for (const r of rows) {
-        const spec = normalize(r.species);
-        const reg = safeText(r.reg).trim();
-        const hit = REG_SPECIES_FILTERS.find(f => f.match.some(m => spec.includes(m)));
-        if (!hit) continue;
-        out.push({ species: r.species, regulation: reg });
-      }
-
-      const seen = new Set();
-      const uniq = [];
-      for (const r of out) {
-        const key = normalize(r.species);
-        if (seen.has(key)) continue;
-        seen.add(key);
-        uniq.push(r);
-      }
-      return uniq;
-    }
-
-    async function fetchSpecialRegsForWid(wid) {
-      const url = officialRegsUrlForWid(wid);
-      const resp = await fetch(url, { cache: "no-store" });
-      if (!resp.ok) throw new Error(`regs http ${resp.status}`);
-      const html = await resp.text();
-
-      const doc = new DOMParser().parseFromString(html, "text/html");
-      const rows = [];
-
-      doc.querySelectorAll("table tr").forEach(tr => {
-        const tds = tr.querySelectorAll("td");
-        if (tds.length >= 2) {
-          const species = tds[0].textContent?.trim() || "";
-          const reg = tds[1].textContent?.trim() || "";
-          if (species && reg) rows.push({ species, reg });
-        }
-      });
-
-      return filterSpeciesRows(rows.map(r => ({ species: r.species, reg: r.reg })));
-    }
-
-    async function getLakeSpecialRegs(projectName, forceRefresh = false) {
-      const wid = projectToWid(projectName);
-      if (!wid) return { wid: null, url: null, rows: [], source: "unknown" };
-
-      const url = officialRegsUrlForWid(wid);
-      const cache = getRegsCache();
-      const cacheKey = String(wid);
-      const cached = cache.items?.[cacheKey];
-
-      const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
-      const cachedOk = cached?.ts && (Date.now() - new Date(cached.ts).getTime() < maxAgeMs);
-
-      if (!forceRefresh && cachedOk && Array.isArray(cached.rows)) {
-        return { wid, url, rows: cached.rows, source: "cache" };
-      }
-
-      try {
-        const rows = await fetchSpecialRegsForWid(wid);
-        cache.items = cache.items || {};
-        cache.items[cacheKey] = { ts: nowIso(), rows };
-        cache.ts = nowIso();
-        setRegsCache(cache);
-        return { wid, url, rows, source: "live" };
-      } catch {
-        if (cached?.rows?.length) return { wid, url, rows: cached.rows, source: "stale_cache" };
-        return { wid, url, rows: [], source: "failed" };
-      }
-    }
-
     function openLakeModal(lakeObj) {
       selectedLake = lakeObj;
 
@@ -1328,8 +1197,6 @@
       const title = document.getElementById("lake-modal-title");
       const subtitle = document.getElementById("lake-modal-subtitle");
       const stats = document.getElementById("lake-modal-stats");
-      const regsBody = document.getElementById("lake-regs-body");
-      const regsStatus = document.getElementById("lake-regs-status");
       const regsLink = document.getElementById("lake-regs-link");
 
       title.textContent = safeText(lakeObj.project || "Lake Details");
@@ -1356,56 +1223,17 @@
         </div>
       `;
 
-      regsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
-      regsStatus.textContent = "Loading…";
-
       const wid = projectToWid(lakeObj.project);
-      regsLink.href = wid ? officialRegsUrlForWid(wid) : "https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx";
-
-      // only refresh button wiring (no quick actions wiring)
-      document.getElementById("lake-regs-refresh").onclick = () => loadLakeRegsIntoModal(lakeObj, true);
+      regsLink.href = wid
+        ? officialRegsUrlForWid(wid)
+        : "https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx";
 
       backdrop.style.display = "flex";
-      loadLakeRegsIntoModal(lakeObj, false);
     }
 
     function closeLakeModal() {
       document.getElementById("lake-modal-backdrop").style.display = "none";
       selectedLake = null;
-    }
-
-    async function loadLakeRegsIntoModal(lakeObj, forceRefresh) {
-      const regsBody = document.getElementById("lake-regs-body");
-      const regsStatus = document.getElementById("lake-regs-status");
-
-      regsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
-      regsStatus.textContent = forceRefresh ? "Refreshing…" : "Loading…";
-
-      const res = await getLakeSpecialRegs(lakeObj.project, forceRefresh);
-
-      const srcLabel =
-        res.source === "live" ? "Loaded from official site" :
-        res.source === "cache" ? "Loaded from cache" :
-        res.source === "stale_cache" ? "Using cached regs (offline/blocked)" :
-        res.source === "failed" ? "Could not fetch regs (tap Open official regs)" :
-        "Unknown";
-
-      regsStatus.textContent = srcLabel;
-
-      if (!res.rows || !res.rows.length) {
-        regsBody.innerHTML = `<tr><td colspan="2">No special regs found for your selected species, or the official page couldn't be fetched. Use the Official link to verify.</td></tr>`;
-        return;
-      }
-
-      regsBody.innerHTML = "";
-      res.rows.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td style="font-weight:1000;">${safeText(r.species)}</td>
-          <td>${safeText(r.regulation)}</td>
-        `;
-        regsBody.appendChild(tr);
-      });
     }
 
     // =========================
