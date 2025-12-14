@@ -77,15 +77,8 @@
       flex-wrap: wrap;
     }
 
-    h1 {
-      font-size: 1.4rem;
-      margin: 0;
-    }
-
-    .subtitle {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
+    h1 { font-size: 1.4rem; margin: 0; }
+    .subtitle { font-size: 0.85rem; color: var(--text-muted); }
 
     .status-pill {
       font-size: 0.75rem;
@@ -98,21 +91,10 @@
       align-items: flex-end;
       gap: 2px;
     }
-
-    .status-pill strong { font-weight: 700; }
+    .status-pill strong { font-weight: 900; }
     .status-pill span { font-size: 0.7rem; color: var(--text-muted); }
     .status-pill .ok { color: var(--success); }
     .status-pill .error { color: var(--danger); }
-
-    .top-row {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    @media (min-width: 900px) {
-      .top-row { flex-direction: row; align-items: stretch; }
-    }
 
     .card {
       background: var(--bg-card);
@@ -122,38 +104,50 @@
       box-sizing: border-box;
       box-shadow: 0 14px 30px rgba(15, 23, 42, 0.65);
     }
-    .card-soft { background: var(--bg-card-soft); box-shadow: 0 10px 20px rgba(15, 23, 42, 0.45); }
-
+    .card-soft {
+      background: var(--bg-card-soft);
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.45);
+    }
     .card h2 { margin: 0 0 6px; font-size: 0.95rem; }
 
-    .badge-row {
+    /* =========================
+       TOP LAYOUT: Sponsor (1), Weather (2), Map (3)
+       Desktop: sponsor left, weather right, map full width below
+       Sponsor + Weather match heights by design
+    ========================= */
+    .top-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "sponsor"
+        "weather"
+        "map";
+      align-items: stretch;
+      margin-bottom: 10px;
+    }
+    .area-sponsor { grid-area: sponsor; }
+    .area-weather { grid-area: weather; }
+    .area-map { grid-area: map; }
+
+    @media (min-width: 980px) {
+      .top-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+          "sponsor weather"
+          "map map";
+      }
+    }
+
+    /* Force equal height behavior for sponsor/weather row */
+    .top-grid > section {
+      height: 100%;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 8px;
+      flex-direction: column;
+      justify-content: flex-start;
     }
 
-    .zip-form {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
-    .zip-form input {
-      width: 90px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-main);
-      color: var(--text-main);
-      font-size: 0.85rem;
-      outline: none;
-    }
-
+    /* Buttons */
     .pill-btn {
       padding: 7px 12px;
       border-radius: 999px;
@@ -162,7 +156,7 @@
       color: var(--text-main);
       font-size: 0.78rem;
       cursor: pointer;
-      font-weight: 800;
+      font-weight: 950;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
@@ -171,13 +165,11 @@
       user-select: none;
       white-space: nowrap;
     }
-
     .pill-btn.primary {
       background: var(--accent);
       border-color: transparent;
       color: #fff;
     }
-
     .pill-btn:active { transform: translateY(1px); }
 
     .boat-toggle, .alert-toggle-label {
@@ -193,43 +185,171 @@
       transform: scale(1.1);
     }
 
+    /* Sponsor Card */
+    .sponsor-wrap { display: flex; gap: 10px; align-items: center; min-height: 62px; }
+    .sponsor-logo {
+      width: 56px; height: 56px; border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-main);
+      object-fit: cover;
+      flex: 0 0 auto;
+    }
+    .sponsor-title { font-weight: 1000; font-size: 0.95rem; margin: 0; }
+    .sponsor-sub { margin: 2px 0 6px; font-size: 0.82rem; color: var(--text-muted); }
+    .sponsor-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+
+    /* Weather */
+    .zip-form {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .zip-form input {
+      width: 90px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .weather-footer {
+      margin-top: auto; /* pushes footer to bottom so card feels balanced */
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 10px;
+    }
+    .weather-toggles {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    /* Map */
+    #map { height: 340px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-subtle); }
+    .map-legend {
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;
+      color: var(--text-muted); font-size:0.78rem;
+    }
+    .dot {
+      width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px;
+      background: var(--accent);
+    }
+    .dot.user { background: #22c55e; }
+    .dot.sponsor { background: #f59e0b; }
+
+    /* Main grid below top area */
     .main-grid {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
+    /* Fish limits - clean tiles (no ruler) */
+    .fish-grid {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .fish-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: none;
+    }
+    .fish-head {
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .fish-name {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight: 1000;
+      font-size: 0.95rem;
+    }
+    .fish-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: var(--bg-main);
+      border: 1px solid var(--border-subtle);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 16px;
+    }
+    .badge {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.24);
+      background: rgba(59,130,246,0.10);
+      font-size: 0.75rem;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    .badge.ok { background: rgba(34, 197, 94, 0.14); }
+    .fish-stats {
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .stat {
+      background: rgba(148,163,184,0.10);
+      border: 1px solid rgba(148,163,184,0.16);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .stat .label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+    .stat .value {
+      font-size: 1.02rem;
+      font-weight: 1000;
+    }
+    .fish-notes {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* Lake table */
     .table-wrapper {
       overflow: auto;
       max-height: calc(100vh - 260px);
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.82rem;
     }
-
-    thead {
-      position: sticky;
-      top: 0;
-      background: var(--bg-card);
-      z-index: 2;
-    }
-
+    thead { position: sticky; top: 0; background: var(--bg-card); z-index: 2; }
     th, td {
       padding: 7px 8px;
       text-align: left;
       border-bottom: 1px solid rgba(148, 163, 184, 0.16);
       white-space: nowrap;
     }
-
-    th {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
-
+    th { font-size: 0.75rem; color: var(--text-muted); font-weight: 900; }
     tbody tr:nth-child(even) { background: rgba(15, 23, 42, 0.25); }
     body.boat-mode tbody tr:nth-child(even) { background: rgba(2, 6, 23, 0.04); }
 
@@ -252,6 +372,7 @@
     .clickable-row { cursor: pointer; }
     .clickable-row:hover { outline: 1px solid rgba(59,130,246,0.35); outline-offset: -1px; }
 
+    /* Chart */
     .chart-card { margin-top: 10px; }
     .chart-header {
       display: flex;
@@ -261,96 +382,11 @@
       flex-wrap: wrap;
       margin-bottom: 4px;
     }
-    .chart-title { font-size: 0.9rem; font-weight: 800; }
+    .chart-title { font-size: 0.9rem; font-weight: 1000; }
     .chart-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; }
     .chart-container { position: relative; height: 340px; max-height: 380px; }
-    @media (min-width: 768px) { .chart-container { height: 380px; } }
 
-    /* Sponsor Card */
-    .sponsor-wrap { display: flex; gap: 10px; align-items: center; min-height: 62px; }
-    .sponsor-logo {
-      width: 56px; height: 56px; border-radius: 14px;
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-main);
-      object-fit: cover;
-      flex: 0 0 auto;
-    }
-    .sponsor-title { font-weight: 900; font-size: 0.95rem; margin: 0; }
-    .sponsor-sub { margin: 2px 0 6px; font-size: 0.82rem; color: var(--text-muted); }
-    .sponsor-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-
-    /* Map */
-    #map { height: 340px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-subtle); }
-    .map-legend {
-      display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;
-      color: var(--text-muted); font-size:0.78rem;
-    }
-    .dot {
-      width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px;
-      background: var(--accent);
-    }
-    .dot.user { background: #22c55e; }
-    .dot.sponsor { background: #f59e0b; }
-
-    /* Fish limits */
-    .fish-grid {
-      margin-top: 10px;
-      display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-    }
-    .fish-box {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 14px;
-      padding: 10px;
-      box-shadow: none;
-    }
-    .fish-top {
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      margin-bottom: 8px;
-    }
-    .fish-name {
-      display:flex; align-items:center; gap:10px;
-      font-weight: 900;
-    }
-    .fish-icon {
-      width: 28px; height: 28px; border-radius: 10px;
-      background: var(--bg-main);
-      border: 1px solid var(--border-subtle);
-      display:flex; align-items:center; justify-content:center;
-      font-size: 16px;
-    }
-    .ruler {
-      width: 100%;
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(148,163,184,0.18);
-      overflow:hidden;
-      border: 1px solid rgba(148,163,184,0.18);
-    }
-    .ruler .fill {
-      height: 100%;
-      width: 0%;
-      background: var(--accent);
-    }
-    .ruler .minline {
-      position: relative;
-      height: 100%;
-    }
-    .ruler .minline:after {
-      content: "";
-      position: absolute;
-      top: -3px;
-      right: 0;
-      width: 2px;
-      height: 16px;
-      background: #22c55e;
-      border-radius: 2px;
-      opacity: 0.85;
-    }
-
-    /* Disclaimer footer */
+    /* Footer */
     .disclaimer-footer {
       width: 100%;
       text-align: center;
@@ -362,7 +398,7 @@
     }
     .boat-mode .disclaimer-footer { color: #111827; opacity: 0.75; }
 
-    /* Modal */
+    /* Modal (Lake details) */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -398,7 +434,7 @@
       color: var(--text-main);
       border-radius: 999px;
       padding: 6px 10px;
-      font-weight: 900;
+      font-weight: 1000;
       cursor: pointer;
     }
     .modal-section {
@@ -427,7 +463,7 @@
       background: rgba(59,130,246,0.10);
       color: var(--text-main);
       font-size: 0.75rem;
-      font-weight: 800;
+      font-weight: 950;
     }
     .tag.warn { background: rgba(245, 158, 11, 0.16); }
     .tag.ok { background: rgba(34, 197, 94, 0.14); }
@@ -450,34 +486,33 @@
       </div>
     </header>
 
-    <div class="top-row">
-      <!-- Sponsor Card -->
-      <section class="card card-soft" style="flex: 1 1 320px;">
+    <!-- TOP: Sponsor + Weather (row), Map below (full width) -->
+    <div class="top-grid">
+      <!-- Area 1: Sponsor (left on desktop) -->
+      <section class="card card-soft area-sponsor">
         <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Sponsored</div>
         <div id="sponsor-content" class="sponsor-wrap">
           <div style="font-size:0.85rem; color: var(--text-muted);">Loading sponsor…</div>
         </div>
       </section>
 
-      <!-- Weather + toggles -->
-      <section class="card card-soft" style="flex: 2 1 520px">
+      <!-- Area 2: Weather (right on desktop) -->
+      <section class="card card-soft area-weather">
         <h2 id="weather-title">Weather – Morehead, KY</h2>
-        <div class="subtitle" id="weather-meta">
-          Default: Morehead, KY — enter ZIP to change.
-        </div>
+        <div class="subtitle" id="weather-meta">Default: Morehead, KY — enter ZIP to change.</div>
         <div id="weather-main" style="margin-top:6px; font-size:0.92rem;">
           <div>Now: —°F, Wind: — mph</div>
           <div>High: —°F, Low: —°F, Rain (24h): —"</div>
         </div>
 
-        <div class="badge-row">
+        <div class="weather-footer">
           <form class="zip-form" id="zip-form">
             <label for="zip-input" class="subtitle" style="font-size: 0.75rem">ZIP</label>
             <input id="zip-input" type="text" maxlength="5" pattern="\d{5}" value="40351" />
             <button class="pill-btn primary" type="submit">Go</button>
           </form>
 
-          <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+          <div class="weather-toggles">
             <label class="boat-toggle">
               <input type="checkbox" id="boat-toggle" />
               <span>Boat mode (bright)</span>
@@ -489,11 +524,9 @@
           </div>
         </div>
       </section>
-    </div>
 
-    <main class="main-grid">
-      <!-- Map + GPS + Sponsor pins -->
-      <section class="card card-soft">
+      <!-- Area 3: Map (full width) -->
+      <section class="card card-soft area-map">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
           <div>
             <h2 style="margin:0;">Map & GPS</h2>
@@ -519,8 +552,10 @@
           Tip: Location needs HTTPS + permission. We only use GPS to show your position.
         </div>
       </section>
+    </div>
 
-      <!-- KY Fish Limits (statewide + per-lake overrides shown when you tap a lake) -->
+    <main class="main-grid">
+      <!-- Fish Limits -->
       <section class="card card-soft">
         <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap;">
           <div>
@@ -531,21 +566,13 @@
           </div>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <label class="subtitle" for="fish-select" style="font-size:0.75rem;">Species</label>
-            <select id="fish-select">
-              <!-- JS fills -->
-            </select>
-            <a class="pill-btn" href="https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx" target="_blank" rel="noopener">
-              Official KY limits
-            </a>
-            <a class="pill-btn" href="https://fw.ky.gov/Fish/Documents/fishingguide.pdf" target="_blank" rel="noopener">
-              KY guide PDF
-            </a>
+            <select id="fish-select"></select>
+            <a class="pill-btn" href="https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx" target="_blank" rel="noopener">Official KY limits</a>
+            <a class="pill-btn" href="https://fw.ky.gov/Fish/Documents/fishingguide.pdf" target="_blank" rel="noopener">KY guide PDF</a>
           </div>
         </div>
 
-        <div id="fish-limits-panel" class="fish-grid">
-          <!-- JS fills -->
-        </div>
+        <div id="fish-limits-panel" class="fish-grid"></div>
 
         <div class="subtitle" style="margin-top:10px; font-size:0.75rem;">
           Always verify special regs for the specific waterbody (KDFWR). If in doubt, release the fish.
@@ -572,15 +599,12 @@
             </thead>
             <tbody id="lakes-body">
               <tr>
-                <td colspan="10" style="padding: 10px 8px; font-size: 0.85rem">
-                  Loading live lake data…
-                </td>
+                <td colspan="10" style="padding: 10px 8px; font-size: 0.85rem">Loading live lake data…</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Chart -->
         <section class="chart-card">
           <div class="chart-header">
             <div class="chart-title">Flood Pool & Selected Metric</div>
@@ -604,13 +628,11 @@
     </main>
 
     <footer class="disclaimer-footer">
-      <p>
-        <strong>Disclaimer:</strong> Not affiliated with USACE or KDFWR. Data and regulations are provided for convenience only; verify official sources before fishing.
-      </p>
+      <p><strong>Disclaimer:</strong> Not affiliated with USACE or KDFWR. Data and regulations are provided for convenience only; verify official sources before fishing.</p>
     </footer>
   </div>
 
-  <!-- Lake Detail Modal (tap a lake row) -->
+  <!-- Lake Detail Modal -->
   <div id="lake-modal-backdrop" class="modal-backdrop">
     <div class="modal">
       <div class="modal-header">
@@ -622,9 +644,7 @@
       </div>
 
       <div class="modal-body">
-        <div id="lake-modal-stats">
-          <!-- JS fills -->
-        </div>
+        <div id="lake-modal-stats"></div>
 
         <div class="modal-section">
           <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
@@ -701,7 +721,6 @@
     // =========================
     const BACKEND_URL = "https://ky-lake-backend.onrender.com";
 
-    // LocalStorage keys
     const FAVORITES_KEY = "kyLakeFavorites";
     const LAST_DATA_KEY = "kyLakeLastData";
     const ALERTS_ENABLED_KEY = "kyLakeAlertsEnabled";
@@ -709,14 +728,11 @@
     const DISCLAIMER_KEY = "kyLakeDisclaimerAccepted";
     const SPONSORS_CACHE_KEY = "kyLakeSponsorsCache_v1";
     const REGS_CACHE_KEY = "kyLakeRegsCache_v1";
-    const FISH_CACHE_KEY = "kyLakeFishDefaults_v1";
 
-    // Chart
     let floodChart = null;
     window.lastLakeData = null;
     let currentChartMetric = "percentUtil";
 
-    // Sponsors
     let sponsorList = [];
 
     // Map/GPS
@@ -726,7 +742,6 @@
     let gpsWatchId = null;
     let sponsorLayer = null;
 
-    // Lake modal state
     let selectedLake = null;
 
     // =========================
@@ -783,10 +798,7 @@
     }
 
     function cacheLakeData(data) {
-      cacheJSON(LAST_DATA_KEY, {
-        timestamp: data.timestamp || nowIso(),
-        lakes: data.lakes || []
-      });
+      cacheJSON(LAST_DATA_KEY, { timestamp: data.timestamp || nowIso(), lakes: data.lakes || [] });
     }
     function loadCachedLakeData() {
       return loadCachedJSON(LAST_DATA_KEY);
@@ -796,7 +808,6 @@
     // SPONSORS (card + map pins)
     // =========================
     async function loadSponsors() {
-      // Try live
       try {
         const resp = await fetch(`${BACKEND_URL}/sponsors`, { cache: "no-store" });
         if (!resp.ok) throw new Error("sponsors http " + resp.status);
@@ -805,7 +816,6 @@
         cacheJSON(SPONSORS_CACHE_KEY, { ts: nowIso(), sponsors: sponsorList });
         return;
       } catch (e) {
-        // Try cache
         const cached = loadCachedJSON(SPONSORS_CACHE_KEY);
         sponsorList = cached?.sponsors || [];
       }
@@ -826,7 +836,6 @@
     }
 
     function trackSponsorEvent(sponsorId, eventType) {
-      // Optional endpoint; safe to fail.
       fetch(`${BACKEND_URL}/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -841,7 +850,7 @@
       if (!sponsor) {
         el.innerHTML = `
           <div style="display:flex; flex-direction:column; gap:6px;">
-            <div style="font-weight:900;">Sponsor spot available</div>
+            <div style="font-weight:1000; font-size:0.98rem;">Sponsor spot available</div>
             <div class="subtitle" style="font-size:0.82rem;">
               Own a marina, bait shop, guide service, or campground? Reach local boaters here.
             </div>
@@ -856,7 +865,7 @@
 
       const logo = sponsor.logoUrl
         ? `<img class="sponsor-logo" src="${sponsor.logoUrl}" alt="${safeText(sponsor.name)} logo" />`
-        : `<div class="sponsor-logo" style="display:flex; align-items:center; justify-content:center; font-weight:900;">
+        : `<div class="sponsor-logo" style="display:flex; align-items:center; justify-content:center; font-weight:1000;">
              ${(safeText(sponsor.name || "S").slice(0,1) || "S").toUpperCase()}
            </div>`;
 
@@ -913,7 +922,7 @@
         }).addTo(sponsorLayer);
 
         m.bindPopup(`
-          <div style="font-weight:900; margin-bottom:4px;">${name}</div>
+          <div style="font-weight:1000; margin-bottom:4px;">${name}</div>
           <div style="opacity:0.85;">${cta}</div>
           ${phone}${dir}${website}
         `);
@@ -931,10 +940,7 @@
     }
 
     function setupMap() {
-      const mapEl = document.getElementById("map");
-      if (!mapEl) return;
-
-      const defaultLatLng = [37.8393, -84.2700]; // KY center
+      const defaultLatLng = [37.8393, -84.27]; // KY center
       map = L.map("map", { zoomControl: true }).setView(defaultLatLng, 7);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -942,7 +948,7 @@
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(map);
 
-      setTimeout(() => map.invalidateSize(), 100);
+      setTimeout(() => map.invalidateSize(), 120);
 
       document.getElementById("center-ky-btn")?.addEventListener("click", () => {
         map.setView(defaultLatLng, 7);
@@ -984,10 +990,7 @@
         alert("GPS is not supported in this browser.");
         return;
       }
-      if (!map) {
-        alert("Map is not initialized yet.");
-        return;
-      }
+      if (!map) return;
 
       setMapStatus("GPS: requesting permission…");
 
@@ -1036,7 +1039,7 @@
     }
 
     // =========================
-    // WEATHER (ZIP → zippopotam.us → open-meteo)
+    // WEATHER
     // =========================
     async function loadWeatherByZip(zip) {
       const titleEl = document.getElementById("weather-title");
@@ -1169,7 +1172,6 @@
 
         const key = lake.project;
         const lastTime = lastSent[key] || 0;
-
         if (now - lastTime < 3 * 60 * 60 * 1000) continue;
 
         const body = `Pool: ${formatNumber(lake.todayPool, 1)} ft, 24h Δ: ${formatNumber(delta, 1)} ft`;
@@ -1181,24 +1183,20 @@
     }
 
     // =========================
-    // FISH LIMITS (Statewide defaults + pretty visuals)
+    // FISH LIMITS (clean tiles)
     // =========================
-    // NOTE: These are KY statewide defaults for your requested species.
-    // Special regs for a specific lake are shown when you tap a lake row.
     const DEFAULT_FISH_LIMITS = [
       {
         key: "Muskie",
         icon: "🐟",
-        minInches: 30,
         minLabel: '30" min',
         daily: "1",
         possession: "2",
-        notes: ""
+        notes: "Statewide default."
       },
       {
         key: "Bass (Largemouth / Smallmouth / Spotted)",
         icon: "🎣",
-        minInches: 12,
         minLabel: '12" min (LM/SM), none (Spotted)',
         daily: "6*",
         possession: "12*",
@@ -1207,16 +1205,14 @@
       {
         key: "Crappie",
         icon: "🐠",
-        minInches: 0,
         minLabel: "No min size (statewide)",
         daily: "20*",
         possession: "40*",
-        notes: "*Black & white combined."
+        notes: "*Black & white combined. Special regs exist on some lakes."
       },
       {
         key: "Bluegill",
         icon: "🐟",
-        minInches: 0,
         minLabel: "No min size",
         daily: "15",
         possession: "30",
@@ -1225,7 +1221,6 @@
       {
         key: "Sauger / Walleye",
         icon: "🐟",
-        minInches: 14,
         minLabel: '14" min (combined)',
         daily: "6*",
         possession: "12*",
@@ -1233,71 +1228,44 @@
       }
     ];
 
-    // “Ruler” is scaled to 40 inches for a simple visual
-    const RULER_MAX_INCHES = 40;
-
-    function loadFishDefaults() {
-      // Cache defaults so app works offline even if you tweak later
-      const cached = loadCachedJSON(FISH_CACHE_KEY);
-      if (cached?.limits?.length) return cached.limits;
-      cacheJSON(FISH_CACHE_KEY, { ts: nowIso(), limits: DEFAULT_FISH_LIMITS });
-      return DEFAULT_FISH_LIMITS;
-    }
-
     function setupFishLimitsCard() {
       const select = document.getElementById("fish-select");
       const panel = document.getElementById("fish-limits-panel");
       if (!select || !panel) return;
 
-      const limits = loadFishDefaults();
-
       select.innerHTML = "";
-      limits.forEach((f, idx) => {
+      DEFAULT_FISH_LIMITS.forEach((f, idx) => {
         const opt = document.createElement("option");
         opt.value = String(idx);
         opt.textContent = f.key;
         select.appendChild(opt);
       });
 
-      function rulerFillPercent(minInches) {
-        const clamped = Math.max(0, Math.min(RULER_MAX_INCHES, Number(minInches || 0)));
-        return (clamped / RULER_MAX_INCHES) * 100;
-      }
-
       function render(idx) {
-        const f = limits[idx] || limits[0];
-        const pct = rulerFillPercent(f.minInches);
+        const f = DEFAULT_FISH_LIMITS[idx] || DEFAULT_FISH_LIMITS[0];
 
         panel.innerHTML = `
           <div class="fish-box">
-            <div class="fish-top">
+            <div class="fish-head">
               <div class="fish-name">
                 <div class="fish-icon">${safeText(f.icon || "🐟")}</div>
                 <div>${safeText(f.key)}</div>
               </div>
-              <span class="tag">${safeText(f.minLabel)}</span>
+              <span class="badge ok">${safeText(f.minLabel)}</span>
             </div>
 
-            <div class="ruler" title="Min size visual">
-              <div class="fill" style="width:${pct}%;"></div>
-              <div class="minline" style="width:${pct}%;"></div>
-            </div>
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-              <div>
-                <div class="subtitle" style="font-size:0.75rem;">Daily limit</div>
-                <div style="font-size:1.05rem; font-weight:900;">${safeText(f.daily)}</div>
+            <div class="fish-stats">
+              <div class="stat">
+                <div class="label">Daily limit</div>
+                <div class="value">${safeText(f.daily)}</div>
               </div>
-              <div>
-                <div class="subtitle" style="font-size:0.75rem;">Possession</div>
-                <div style="font-size:1.05rem; font-weight:900;">${safeText(f.possession)}</div>
+              <div class="stat">
+                <div class="label">Possession</div>
+                <div class="value">${safeText(f.possession)}</div>
               </div>
             </div>
 
-            <div style="margin-top:10px;">
-              <div class="subtitle" style="font-size:0.75rem;">Notes</div>
-              <div class="subtitle" style="font-size:0.82rem;">${safeText(f.notes || "—")}</div>
-            </div>
+            <div class="fish-notes"><strong>Notes:</strong> ${safeText(f.notes || "—")}</div>
           </div>
         `;
       }
@@ -1307,10 +1275,8 @@
     }
 
     // =========================
-    // SPECIAL REGS BY LAKE (tap a lake row)
+    // SPECIAL REGS BY LAKE (modal)
     // =========================
-    // Mapping of known KY lakes to KDFWR Waterbody IDs (wid).
-    // Add more lakes here anytime.
     const KDFWR_WID_MAP = {
       "Kentucky Lake": 64,
       "Lake Barkley": 66,
@@ -1318,7 +1284,6 @@
       "Lake Cumberland - Upper": 345
     };
 
-    // We only display special regs for your requested species in the modal
     const REG_SPECIES_FILTERS = [
       { key: "Muskellunge", match: ["MUSKELLUNGE", "MUSKIE"] },
       { key: "Bass", match: ["LARGEMOUTH BASS", "SMALLMOUTH BASS", "SPOTTED BASS", "KENTUCKY BASS", "BLACK BASS"] },
@@ -1331,9 +1296,7 @@
       const cached = loadCachedJSON(REGS_CACHE_KEY);
       return cached && typeof cached === "object" ? cached : { ts: null, items: {} };
     }
-    function setRegsCache(cacheObj) {
-      cacheJSON(REGS_CACHE_KEY, cacheObj);
-    }
+    function setRegsCache(cacheObj) { cacheJSON(REGS_CACHE_KEY, cacheObj); }
 
     function officialRegsUrlForWid(wid) {
       return `https://app.fw.ky.gov/fisheries/waterbodydetail.aspx?wid=${encodeURIComponent(wid)}`;
@@ -1341,38 +1304,28 @@
 
     function projectToWid(projectName) {
       if (!projectName) return null;
-
-      // Direct match
       if (KDFWR_WID_MAP[projectName]) return KDFWR_WID_MAP[projectName];
 
-      // Simple heuristics
       const p = projectName.toLowerCase();
       if (p.includes("kentucky lake")) return 64;
       if (p.includes("barkley")) return 66;
       if (p.includes("cumberland") && p.includes("upper")) return 345;
       if (p.includes("cumberland")) return 98;
-
       return null;
     }
 
-    function normalize(s) {
-      return safeText(s).trim().toUpperCase();
-    }
+    function normalize(s) { return safeText(s).trim().toUpperCase(); }
 
     function filterSpeciesRows(rows) {
-      // rows: [{species, reg}]
       const out = [];
       for (const r of rows) {
         const spec = normalize(r.species);
         const reg = safeText(r.reg).trim();
         const hit = REG_SPECIES_FILTERS.find(f => f.match.some(m => spec.includes(m)));
         if (!hit) continue;
-
-        // Keep original species label from source
         out.push({ species: r.species, regulation: reg });
       }
 
-      // De-dup by species (keep first)
       const seen = new Set();
       const uniq = [];
       for (const r of out) {
@@ -1385,8 +1338,6 @@
     }
 
     async function fetchSpecialRegsForWid(wid) {
-      // Try to fetch and parse the KDFWR waterbody detail page.
-      // NOTE: Some hosts block cross-origin fetch. If that happens, we fall back to “Open official regs”.
       const url = officialRegsUrlForWid(wid);
       const resp = await fetch(url, { cache: "no-store" });
       if (!resp.ok) throw new Error(`regs http ${resp.status}`);
@@ -1394,8 +1345,6 @@
 
       const doc = new DOMParser().parseFromString(html, "text/html");
 
-      // Attempt 1: parse table rows that look like Species / Regulation Description
-      // The page includes a table; we grab all rows with >=2 cells.
       const rows = [];
       doc.querySelectorAll("table tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
@@ -1405,18 +1354,6 @@
           if (species && reg) rows.push({ species, reg });
         }
       });
-
-      // Some pages might be rendered differently; fallback: scan all <tr> in any table-like structure
-      if (!rows.length) {
-        doc.querySelectorAll("tr").forEach(tr => {
-          const tds = tr.querySelectorAll("td");
-          if (tds.length >= 2) {
-            const species = tds[0].textContent?.trim() || "";
-            const reg = tds[1].textContent?.trim() || "";
-            if (species && reg) rows.push({ species, reg });
-          }
-        });
-      }
 
       return filterSpeciesRows(rows.map(r => ({ species: r.species, reg: r.reg })));
     }
@@ -1430,7 +1367,6 @@
       const cacheKey = String(wid);
       const cached = cache.items?.[cacheKey];
 
-      // Cache window: 7 days
       const maxAgeMs = 7 * 24 * 60 * 60 * 1000;
       const cachedOk = cached?.ts && (Date.now() - new Date(cached.ts).getTime() < maxAgeMs);
 
@@ -1446,7 +1382,6 @@
         setRegsCache(cache);
         return { wid, url, rows, source: "live" };
       } catch (e) {
-        // If live fails but we have any cached rows, return them
         if (cached?.rows?.length) return { wid, url, rows: cached.rows, source: "stale_cache" };
         return { wid, url, rows: [], source: "failed" };
       }
@@ -1470,19 +1405,19 @@
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:10px;">
           <div class="fish-box">
             <div class="subtitle" style="font-size:0.75rem;">Pool</div>
-            <div style="font-size:1.05rem; font-weight:900;">${formatNumber(lakeObj.todayPool, 1)} ft</div>
+            <div style="font-size:1.05rem; font-weight:1000;">${formatNumber(lakeObj.todayPool, 1)} ft</div>
           </div>
           <div class="fish-box">
             <div class="subtitle" style="font-size:0.75rem;">Deviation</div>
-            <div style="font-size:1.05rem; font-weight:900;" class="${classifyDelta(lakeObj.deviation)}">${formatNumber(lakeObj.deviation, 1)} ft</div>
+            <div style="font-size:1.05rem; font-weight:1000;" class="${classifyDelta(lakeObj.deviation)}">${formatNumber(lakeObj.deviation, 1)} ft</div>
           </div>
           <div class="fish-box">
             <div class="subtitle" style="font-size:0.75rem;">24h Δ</div>
-            <div style="font-size:1.05rem; font-weight:900;" class="${classifyDelta(lakeObj.change24h)}">${formatNumber(lakeObj.change24h, 1)} ft</div>
+            <div style="font-size:1.05rem; font-weight:1000;" class="${classifyDelta(lakeObj.change24h)}">${formatNumber(lakeObj.change24h, 1)} ft</div>
           </div>
           <div class="fish-box">
             <div class="subtitle" style="font-size:0.75rem;">Flood Util</div>
-            <div style="font-size:1.05rem; font-weight:900;">${formatNumber(lakeObj.percentUtil, 2)}%</div>
+            <div style="font-size:1.05rem; font-weight:1000;">${formatNumber(lakeObj.percentUtil, 2)}%</div>
           </div>
         </div>
       `;
@@ -1490,20 +1425,15 @@
       regsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
       regsStatus.textContent = "Loading…";
 
-      // Wire official link / refresh
       const wid = projectToWid(lakeObj.project);
       regsLink.href = wid ? officialRegsUrlForWid(wid) : "https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx";
 
       backdrop.style.display = "flex";
 
-      // Map buttons
       document.getElementById("lake-center-btn").onclick = () => centerLakeOnMap(lakeObj);
       document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj);
-
-      // Refresh regs
       document.getElementById("lake-regs-refresh").onclick = () => loadLakeRegsIntoModal(lakeObj, true);
 
-      // Load regs
       loadLakeRegsIntoModal(lakeObj, false);
     }
 
@@ -1539,7 +1469,7 @@
       res.rows.forEach(r => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td style="font-weight:900;">${safeText(r.species)}</td>
+          <td style="font-weight:1000;">${safeText(r.species)}</td>
           <td>${safeText(r.regulation)}</td>
         `;
         regsBody.appendChild(tr);
@@ -1549,24 +1479,18 @@
     function centerLakeOnMap(lakeObj) {
       if (!map) return;
 
-      // If your backend provides lake lat/lon, we use it.
-      // Otherwise we just keep current view (you can add lat/lon later).
       const lat = Number(lakeObj.lat ?? lakeObj.latitude);
       const lon = Number(lakeObj.lon ?? lakeObj.lng ?? lakeObj.longitude);
 
       if (isFinite(lat) && isFinite(lon)) {
         map.setView([lat, lon], 11);
-        L.popup()
-          .setLatLng([lat, lon])
-          .setContent(`<strong>${safeText(lakeObj.project)}</strong>`)
-          .openOn(map);
+        L.popup().setLatLng([lat, lon]).setContent(`<strong>${safeText(lakeObj.project)}</strong>`).openOn(map);
       } else {
         alert("This lake doesn't have coordinates yet. If you add lat/lon in your backend for each lake, this button will center accurately.");
       }
     }
 
     function lakeDirectionsUrl(lakeObj) {
-      // If lake has coordinates → use them, otherwise search query
       const lat = Number(lakeObj.lat ?? lakeObj.latitude);
       const lon = Number(lakeObj.lon ?? lakeObj.lng ?? lakeObj.longitude);
       if (isFinite(lat) && isFinite(lon)) {
@@ -1656,7 +1580,6 @@
           <td class="num">${formatNumber(lake.percentUtil, 2)}</td>
         `;
 
-        // Favorite toggle (stop row click)
         tr.querySelector(".fav-btn").addEventListener("click", (e) => {
           e.stopPropagation();
           const project = e.currentTarget.getAttribute("data-project");
@@ -1668,9 +1591,7 @@
           loadLakes();
         });
 
-        // Row click → modal (special regs by lake)
         tr.addEventListener("click", () => openLakeModal(lake));
-
         tbody.appendChild(tr);
       }
 
@@ -1689,8 +1610,6 @@
 
       renderFloodChart(lakes);
       maybeNotifyFavorites(lakes);
-
-      // Sponsor refresh (favorites may change)
       renderSponsorCard(pickSponsorForDisplay());
     }
 
@@ -1703,7 +1622,6 @@
       const ctx = canvas.getContext("2d");
 
       const metric = currentChartMetric;
-
       const metricConfig = {
         percentUtil: { label: "% Utilized", decimals: 2 },
         todayPool: { label: "Pool Elevation (ft)", decimals: 1 },
@@ -1711,7 +1629,6 @@
         inflow: { label: "Inflow (cfs)", decimals: 0 },
         outflow: { label: "Outflow (cfs)", decimals: 0 },
       };
-
       const cfg = metricConfig[metric] || metricConfig.percentUtil;
 
       const usable = (lakes || [])
@@ -1732,26 +1649,22 @@
         type: "bar",
         data: {
           labels,
-          datasets: [
-            {
-              label: cfg.label,
-              data: values,
-              backgroundColor: isBoat ? "#0284c7" : "#3b82f6",
-              borderRadius: 4,
-              barThickness: 14,
-            },
-          ],
+          datasets: [{
+            label: cfg.label,
+            data: values,
+            backgroundColor: isBoat ? "#0284c7" : "#3b82f6",
+            borderRadius: 4,
+            barThickness: 14,
+          }],
         },
         options: {
           indexAxis: "y",
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { labels: { color: axisColor, font: { size: 12, weight: "700" } } },
+            legend: { labels: { color: axisColor, font: { size: 12, weight: "900" } } },
             tooltip: {
-              callbacks: {
-                label: (c) => `${cfg.label}: ${formatNumber(c.parsed.x, cfg.decimals)}`
-              },
+              callbacks: { label: (c) => `${cfg.label}: ${formatNumber(c.parsed.x, cfg.decimals)}` },
               titleColor: "#0B1020",
               bodyColor: "#0B1020",
               backgroundColor: "#E8F0FF",
@@ -1761,7 +1674,7 @@
           },
           scales: {
             x: { ticks: { color: axisColor }, grid: { color: gridColor } },
-            y: { ticks: { color: labelColor, font: { weight: "700" } }, grid: { color: "rgba(148,163,184,0.10)" } }
+            y: { ticks: { color: labelColor, font: { weight: "900" } }, grid: { color: "rgba(148,163,184,0.10)" } }
           }
         }
       });
@@ -1805,7 +1718,7 @@
     }
 
     // =========================
-    // SERVICE WORKER (PWA)
+    // SERVICE WORKER
     // =========================
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
