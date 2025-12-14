@@ -646,17 +646,8 @@
       <div class="modal-body">
         <div id="lake-modal-stats"></div>
 
-        <div class="modal-section">
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <span class="tag warn">Special regulations</span>
-              <span class="subtitle" id="lake-regs-status">Loading…</span>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <a id="lake-regs-link" class="pill-btn" href="#" target="_blank" rel="noopener">Open official regs</a>
-              <button id="lake-regs-refresh" class="pill-btn" type="button">Refresh</button>
-            </div>
-          </div>
+document.getElementById("lake-center-btn").onclick = () => centerLakeOnMap(lakeObj);
+document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj);
 
           <div style="margin-top:10px;">
             <table class="regs-table">
@@ -1751,3 +1742,4 @@
   </script>
 </body>
 </html>
+
