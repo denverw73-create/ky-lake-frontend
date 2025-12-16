@@ -65,7 +65,7 @@
     header.app-header {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
       margin-bottom: 10px;
     }
 
@@ -73,43 +73,37 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
     h1 { font-size: 1.4rem; margin: 0; }
     .subtitle { font-size: 0.85rem; color: var(--text-muted); }
 
-    .badge-top {
-      display: inline-flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 6px;
-    }
-    .chip {
-      font-size: 0.72rem;
-      font-weight: 900;
-      padding: 4px 10px;
+    .veteran-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.20);
+      border: 1px solid rgba(148,163,184,0.22);
       background: rgba(59,130,246,0.10);
+      font-size: 0.78rem;
+      font-weight: 900;
       color: var(--text-main);
-      white-space: nowrap;
+      width: fit-content;
     }
-    .chip.ok { background: rgba(34,197,94,0.14); }
-    .chip.warn { background: rgba(245,158,11,0.14); }
 
     .status-pill {
       font-size: 0.75rem;
       border-radius: 999px;
-      padding: 6px 12px;
+      padding: 4px 10px;
       background: var(--bg-card-soft);
       border: 1px solid var(--border-subtle);
       display: inline-flex;
       flex-direction: column;
       align-items: flex-end;
       gap: 2px;
-      min-width: 220px;
     }
     .status-pill strong { font-weight: 900; }
     .status-pill span { font-size: 0.7rem; color: var(--text-muted); }
@@ -130,7 +124,22 @@
     }
     .card h2 { margin: 0 0 6px; font-size: 0.95rem; }
 
-    /* Top layout */
+    /* Debug banner (shows when something breaks) */
+    .error-banner {
+      display:none;
+      margin-top: 6px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(248,113,113,0.35);
+      background: rgba(248,113,113,0.10);
+      color: var(--text-main);
+      font-size: 0.82rem;
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
+    .error-banner strong { color: #fca5a5; }
+
+    /* Top layout: Sponsor left + Weather right, Map full width below */
     .top-grid {
       display: grid;
       gap: 10px;
@@ -161,7 +170,6 @@
       flex-direction: column;
     }
 
-    /* Buttons */
     .pill-btn {
       padding: 7px 12px;
       border-radius: 999px;
@@ -217,7 +225,6 @@
       font-size: 0.85rem;
       outline: none;
     }
-
     .boat-toggle, .alert-toggle-label {
       display: inline-flex;
       align-items: center;
@@ -230,7 +237,6 @@
       accent-color: var(--accent);
       transform: scale(1.1);
     }
-
     .weather-footer {
       margin-top: auto;
       display: flex;
@@ -438,6 +444,7 @@
     }
     .boat-mode .disclaimer-footer { color: #111827; opacity: 0.75; }
 
+    /* Small inputs/selects */
     select {
       font-size: 0.78rem;
       padding: 4px 10px;
@@ -457,17 +464,18 @@
         <div>
           <h1>KY Lake Levels</h1>
           <div class="subtitle">
-            Live levels, maps, sponsors, and fish regs for your favorite KY waters. Always wear your life jacket while on the water.
+            Live levels, maps, sponsors, and fish regs for your favorite KY waters. Always wear your life jacket while on the water. Be responsible. Be safe.
           </div>
-          <div class="badge-top">
-            <span class="chip ok">Veteran owned &amp; operated</span>
-            <span class="chip warn">Be safe. Be responsible.</span>
+          <div class="veteran-pill" aria-label="Veteran owned and operated">
+            🇺🇸 Veteran owned &amp; operated
           </div>
+
+          <div id="error-banner" class="error-banner"></div>
         </div>
 
         <div class="status-pill">
           <strong id="updated-label">Updated: —</strong>
-          <span id="status-line">Booting…</span>
+          <span id="status-line">Waiting for data…</span>
           <span style="margin-top: 2px; font-size: 0.7rem">Units: ft, cfs, in</span>
         </div>
       </div>
@@ -515,7 +523,7 @@
       <section class="card card-soft area-map">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
           <div>
-            <h2 style="margin:0;">Map &amp; GPS</h2>
+            <h2 style="margin:0;">Map & GPS</h2>
             <div class="subtitle" id="map-status">GPS: idle</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -545,8 +553,10 @@
       <section class="card card-soft">
         <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap;">
           <div>
-            <h2 style="margin:0;">KY Fish Size &amp; Creel Limits</h2>
-            <div class="subtitle" style="margin-top:4px;">Statewide defaults (quick reference).</div>
+            <h2 style="margin:0;">KY Fish Size & Creel Limits</h2>
+            <div class="subtitle" style="margin-top:4px;">
+              Statewide defaults (quick reference).
+            </div>
           </div>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <label class="subtitle" for="fish-select" style="font-size:0.75rem;">Species</label>
@@ -591,7 +601,7 @@
 
         <section class="chart-card">
           <div class="chart-header">
-            <div class="chart-title">Flood Pool &amp; Selected Metric</div>
+            <div class="chart-title">Flood Pool & Selected Metric</div>
             <div>
               <label style="font-size:0.75rem; color:var(--text-muted); margin-right:6px;">Chart metric:</label>
               <select id="chart-metric">
@@ -616,7 +626,7 @@
     </footer>
   </div>
 
-  <!-- Lake Detail Modal (NO official regs link anymore) -->
+  <!-- Lake Detail Modal (NO "Open official regs" link anywhere) -->
   <div id="lake-modal-backdrop" class="modal-backdrop">
     <div class="modal">
       <div class="modal-header">
@@ -683,23 +693,24 @@
     let selectedLake = null;
 
     // =========================
-    // SAFE UI STATUS
+    // ERROR BANNER (so failures don't look like "nothing loads")
     // =========================
-    function setStatus(text, kind) {
-      const el = document.getElementById("status-line");
+    function showErrorBanner(msg) {
+      const el = document.getElementById("error-banner");
       if (!el) return;
-      el.textContent = text;
-      el.classList.remove("ok", "error");
-      if (kind) el.classList.add(kind);
+      el.style.display = "block";
+      el.innerHTML = `<strong>App warning:</strong> ${String(msg || "Unknown error")}`;
     }
 
-    // Global crash catcher so you see it on-page
-    window.addEventListener("error", (e) => {
-      setStatus("App error: " + (e.message || "unknown"), "error");
-    });
-    window.addEventListener("unhandledrejection", (e) => {
-      setStatus("App error: " + (e.reason?.message || "promise rejected"), "error");
-    });
+    function safeRun(label, fn) {
+      try {
+        return fn();
+      } catch (e) {
+        console.error(label, e);
+        showErrorBanner(`${label}: ${e && e.message ? e.message : e}`);
+        return null;
+      }
+    }
 
     // =========================
     // UTIL
@@ -770,7 +781,8 @@
         sponsorList = Array.isArray(data) ? data : (data.sponsors || []);
         cacheJSON(SPONSORS_CACHE_KEY, { ts: nowIso(), sponsors: sponsorList });
         return;
-      } catch {
+      } catch (e) {
+        console.warn("Sponsors fetch failed:", e);
         const cached = loadCachedJSON(SPONSORS_CACHE_KEY);
         sponsorList = cached?.sponsors || [];
       }
@@ -850,8 +862,13 @@
     }
 
     function updateSponsorPinsOnMap() {
-      if (!map || !window.L) return;
-      if (sponsorLayer) sponsorLayer.remove();
+      if (!map) return;
+      if (typeof L === "undefined") return;
+
+      if (sponsorLayer) {
+        sponsorLayer.removeFrom(map);
+        sponsorLayer = null;
+      }
       sponsorLayer = L.layerGroup().addTo(map);
 
       const active = sponsorList.filter(s => s && s.active !== false);
@@ -895,7 +912,12 @@
     }
 
     function setupMap() {
-      if (!window.L) return;
+      if (typeof L === "undefined") {
+        setMapStatus("Map: unavailable (Leaflet failed to load)");
+        showErrorBanner("Leaflet failed to load. The map will be disabled, but the rest of the app should still work.");
+        return;
+      }
+
       const defaultLatLng = [37.8393, -84.27];
       map = L.map("map", { zoomControl: true }).setView(defaultLatLng, 7);
 
@@ -912,7 +934,7 @@
     }
 
     function ensureUserLayers(lat, lng, accuracyMeters) {
-      if (!map || !window.L) return;
+      if (!map || typeof L === "undefined") return;
       const latlng = [lat, lng];
 
       if (!userMarker) {
@@ -923,7 +945,9 @@
           fillColor: "#22c55e",
           fillOpacity: 0.9,
         }).addTo(map);
-      } else userMarker.setLatLng(latlng);
+      } else {
+        userMarker.setLatLng(latlng);
+      }
 
       if (!accuracyCircle) {
         accuracyCircle = L.circle(latlng, {
@@ -940,8 +964,14 @@
     }
 
     function startGps() {
-      if (!("geolocation" in navigator)) return alert("GPS is not supported in this browser.");
-      if (!map) return;
+      if (!("geolocation" in navigator)) {
+        alert("GPS is not supported in this browser.");
+        return;
+      }
+      if (!map) {
+        alert("Map is not available right now.");
+        return;
+      }
 
       setMapStatus("GPS: requesting permission…");
 
@@ -961,6 +991,7 @@
       );
 
       if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
+
       gpsWatchId = navigator.geolocation.watchPosition(
         (pos) => {
           const { latitude, longitude, accuracy } = pos.coords;
@@ -976,8 +1007,10 @@
     }
 
     function stopGps() {
-      if (gpsWatchId) navigator.geolocation.clearWatch(gpsWatchId);
-      gpsWatchId = null;
+      if (gpsWatchId) {
+        navigator.geolocation.clearWatch(gpsWatchId);
+        gpsWatchId = null;
+      }
       setMapStatus("GPS: stopped");
     }
 
@@ -1013,10 +1046,10 @@
         );
         const meteo = await meteoResp.json();
 
-        const times = meteo.hourly.time || [];
-        const temps = meteo.hourly.temperature_2m || [];
-        const winds = meteo.hourly.wind_speed_10m || [];
-        const precip = meteo.hourly.precipitation || [];
+        const times = meteo.hourly?.time || [];
+        const temps = meteo.hourly?.temperature_2m || [];
+        const winds = meteo.hourly?.wind_speed_10m || [];
+        const precip = meteo.hourly?.precipitation || [];
 
         let nowIndex = 0;
         if (times.length) {
@@ -1187,7 +1220,7 @@
     }
 
     // =========================
-    // LAKE MODAL (NO OFFICIAL LINK)
+    // LAKE MODAL (NO OFFICIAL REGS LINK)
     // =========================
     function openLakeModal(lakeObj) {
       selectedLake = lakeObj;
@@ -1235,10 +1268,13 @@
     async function loadLakes() {
       const tbody = document.getElementById("lakes-body");
       const updatedLabel = document.getElementById("updated-label");
+      const statusLine = document.getElementById("status-line");
 
       tbody.innerHTML = `
         <tr>
-          <td colspan="10" style="padding: 10px 8px; font-size:0.85rem">Loading live lake data…</td>
+          <td colspan="10" style="padding: 10px 8px; font-size:0.85rem">
+            Loading live lake data…
+          </td>
         </tr>`;
 
       let data = null;
@@ -1256,9 +1292,13 @@
         if (cached && cached.lakes && cached.lakes.length) {
           data = cached;
           fromCache = true;
+          showErrorBanner("Backend unreachable — using cached lake data.");
         } else {
           updatedLabel.textContent = "Updated: error";
-          setStatus("Backend not reachable (and no cache).", "error");
+          statusLine.textContent = "Could not reach backend — and no cached data available.";
+          statusLine.classList.remove("ok");
+          statusLine.classList.add("error");
+          showErrorBanner("Could not reach backend and no cached data exists. Check BACKEND_URL and CORS.");
           return;
         }
       }
@@ -1266,7 +1306,8 @@
       const lakes = data.lakes || [];
       window.lastLakeData = lakes;
 
-      const favSet = new Set(getFavorites());
+      const favorites = getFavorites();
+      const favSet = new Set(favorites);
 
       lakes.sort((a, b) => {
         const af = favSet.has(a.project);
@@ -1321,20 +1362,30 @@
       const ts = data.timestamp ? new Date(data.timestamp) : new Date();
       updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
 
-      setStatus(
-        fromCache ? `Using cached data (${lakes.length} lakes)` : `App started ✓ Loaded ${lakes.length} lakes`,
-        fromCache ? "error" : "ok"
-      );
+      if (fromCache) {
+        statusLine.textContent = `Using cached data (${lakes.length} lakes) – offline`;
+        statusLine.classList.remove("ok");
+        statusLine.classList.add("error");
+      } else {
+        statusLine.textContent = `Loaded ${lakes.length} lakes`;
+        statusLine.classList.remove("error");
+        statusLine.classList.add("ok");
+      }
 
-      renderFloodChart(lakes);
-      maybeNotifyFavorites(lakes);
-      renderSponsorCard(pickSponsorForDisplay());
+      safeRun("Chart", () => renderFloodChart(lakes));
+      safeRun("Alerts", () => maybeNotifyFavorites(lakes));
+      safeRun("Sponsor card", () => renderSponsorCard(pickSponsorForDisplay()));
     }
 
     // =========================
     // CHART
     // =========================
     function renderFloodChart(lakes) {
+      if (typeof Chart === "undefined") {
+        showErrorBanner("Chart.js failed to load. The chart will be disabled, but the rest of the app should still work.");
+        return;
+      }
+
       const canvas = document.getElementById("floodChart");
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
@@ -1402,7 +1453,7 @@
       const select = document.getElementById("chart-metric");
       select.addEventListener("change", () => {
         currentChartMetric = select.value;
-        if (window.lastLakeData) renderFloodChart(window.lastLakeData);
+        if (window.lastLakeData) safeRun("Chart redraw", () => renderFloodChart(window.lastLakeData));
       });
     }
 
@@ -1448,29 +1499,22 @@
     // INIT
     // =========================
     document.addEventListener("DOMContentLoaded", async () => {
-      try {
-        setStatus("App starting…", null);
+      safeRun("Boat mode", setupBoatMode);
+      safeRun("Weather", setupZipForm);
+      safeRun("Alerts toggle", setupAlertsToggle);
+      safeRun("Chart selector", setupChartMetricSelector);
+      safeRun("Disclaimer", setupDisclaimerModal);
+      safeRun("Lake modal", setupLakeModal);
 
-        setupBoatMode();
-        setupZipForm();
-        setupAlertsToggle();
-        setupChartMetricSelector();
-        setupDisclaimerModal();
-        setupLakeModal();
+      safeRun("Map", setupMap);
+      safeRun("GPS buttons", setupGpsButtons);
 
-        setupMap();
-        setupGpsButtons();
+      await safeRun("Sponsors", loadSponsors);
+      safeRun("Sponsor card", () => renderSponsorCard(pickSponsorForDisplay()));
+      safeRun("Sponsor pins", updateSponsorPinsOnMap);
 
-        await loadSponsors();
-        renderSponsorCard(pickSponsorForDisplay());
-        updateSponsorPinsOnMap();
-
-        setupFishLimitsCard();
-        await loadLakes();
-      } catch (e) {
-        console.error(e);
-        setStatus("Init failed: " + (e.message || "unknown"), "error");
-      }
+      safeRun("Fish limits", setupFishLimitsCard);
+      safeRun("Lakes", loadLakes);
     });
   </script>
 </body>
