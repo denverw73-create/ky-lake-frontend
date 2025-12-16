@@ -65,34 +65,78 @@
     header.app-header {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
       margin-bottom: 10px;
+    }
+
+    /* Full-width veteran banner (NOT button-like) */
+    .veteran-banner {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.20);
+      background: rgba(59, 130, 246, 0.10);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      box-sizing: border-box;
+    }
+    body.boat-mode .veteran-banner {
+      background: rgba(2, 132, 199, 0.10);
+      border: 1px solid rgba(2, 132, 199, 0.20);
+    }
+
+    .veteran-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .veteran-flag {
+      font-size: 1.1rem;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+    .veteran-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .veteran-title {
+      font-weight: 1000;
+      font-size: 0.9rem;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .veteran-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .veteran-right {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 900;
+      flex: 0 0 auto;
+      white-space: nowrap;
     }
 
     .title-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
     h1 { font-size: 1.4rem; margin: 0; }
     .subtitle { font-size: 0.85rem; color: var(--text-muted); }
-
-    .veteran-pill {
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.22);
-      background: rgba(59,130,246,0.10);
-      font-size: 0.78rem;
-      font-weight: 900;
-      color: var(--text-main);
-      width: fit-content;
-    }
 
     .status-pill {
       font-size: 0.75rem;
@@ -124,22 +168,7 @@
     }
     .card h2 { margin: 0 0 6px; font-size: 0.95rem; }
 
-    /* Debug banner (shows when something breaks) */
-    .error-banner {
-      display:none;
-      margin-top: 6px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(248,113,113,0.35);
-      background: rgba(248,113,113,0.10);
-      color: var(--text-main);
-      font-size: 0.82rem;
-      line-height: 1.35;
-      white-space: pre-wrap;
-    }
-    .error-banner strong { color: #fca5a5; }
-
-    /* Top layout: Sponsor left + Weather right, Map full width below */
+    /* Top layout: Sponsor left + Weather right, Map below */
     .top-grid {
       display: grid;
       gap: 10px;
@@ -170,6 +199,7 @@
       flex-direction: column;
     }
 
+    /* Buttons */
     .pill-btn {
       padding: 7px 12px;
       border-radius: 999px;
@@ -225,6 +255,7 @@
       font-size: 0.85rem;
       outline: none;
     }
+
     .boat-toggle, .alert-toggle-label {
       display: inline-flex;
       align-items: center;
@@ -237,6 +268,7 @@
       accent-color: var(--accent);
       transform: scale(1.1);
     }
+
     .weather-footer {
       margin-top: auto;
       display: flex;
@@ -318,6 +350,7 @@
       white-space: nowrap;
     }
     .badge.ok { background: rgba(34, 197, 94, 0.14); }
+
     .fish-stats {
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -460,19 +493,26 @@
 <body>
   <div class="app-shell">
     <header class="app-header">
+      <!-- Full-width Veteran banner -->
+      <div class="veteran-banner" role="note" aria-label="Veteran owned and operated">
+        <div class="veteran-left">
+          <span class="veteran-flag" aria-hidden="true">🇺🇸</span>
+          <div class="veteran-text">
+            <div class="veteran-title">Veteran Owned &amp; Operated</div>
+            <div class="veteran-sub">Thank you for supporting a small KY business.</div>
+          </div>
+        </div>
+        <div class="veteran-right">Be safe • Wear your life jacket</div>
+      </div>
+
       <div class="title-row">
         <div>
           <h1>KY Lake Levels</h1>
           <div class="subtitle">
-            Live levels, maps, sponsors, and fish regs for your favorite KY waters. Always wear your life jacket while on the water. Be responsible. Be safe.
+            Live levels, maps, sponsors, and fish regs for your favorite KY waters.
+            Be responsible, be safe.
           </div>
-          <div class="veteran-pill" aria-label="Veteran owned and operated">
-            🇺🇸 Veteran owned &amp; operated
-          </div>
-
-          <div id="error-banner" class="error-banner"></div>
         </div>
-
         <div class="status-pill">
           <strong id="updated-label">Updated: —</strong>
           <span id="status-line">Waiting for data…</span>
@@ -523,7 +563,7 @@
       <section class="card card-soft area-map">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
           <div>
-            <h2 style="margin:0;">Map & GPS</h2>
+            <h2 style="margin:0;">Map &amp; GPS</h2>
             <div class="subtitle" id="map-status">GPS: idle</div>
           </div>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -553,7 +593,7 @@
       <section class="card card-soft">
         <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap;">
           <div>
-            <h2 style="margin:0;">KY Fish Size & Creel Limits</h2>
+            <h2 style="margin:0;">KY Fish Size &amp; Creel Limits</h2>
             <div class="subtitle" style="margin-top:4px;">
               Statewide defaults (quick reference).
             </div>
@@ -601,7 +641,7 @@
 
         <section class="chart-card">
           <div class="chart-header">
-            <div class="chart-title">Flood Pool & Selected Metric</div>
+            <div class="chart-title">Flood Pool &amp; Selected Metric</div>
             <div>
               <label style="font-size:0.75rem; color:var(--text-muted); margin-right:6px;">Chart metric:</label>
               <select id="chart-metric">
@@ -639,6 +679,7 @@
 
       <div class="modal-body">
         <div id="lake-modal-stats"></div>
+        <!-- (link removed by request) -->
       </div>
     </div>
   </div>
@@ -656,7 +697,7 @@
       <div class="modal-body">
         <p class="subtitle" style="font-size:0.9rem; line-height:1.4;">
           This application is not affiliated with, endorsed by, or sponsored by the U.S. Army Corps of Engineers or KDFWR.
-          All lake data is from public sources. Accuracy is not guaranteed.
+          All lake data and regulation references are from public sources. Accuracy is not guaranteed.
           You are responsible for your safety and for verifying fishing regulations for your specific waterbody.
         </p>
         <button id="disclaimer-accept-btn" class="pill-btn primary" style="margin-top:10px;">I Understand</button>
@@ -691,26 +732,6 @@
     let sponsorLayer = null;
 
     let selectedLake = null;
-
-    // =========================
-    // ERROR BANNER (so failures don't look like "nothing loads")
-    // =========================
-    function showErrorBanner(msg) {
-      const el = document.getElementById("error-banner");
-      if (!el) return;
-      el.style.display = "block";
-      el.innerHTML = `<strong>App warning:</strong> ${String(msg || "Unknown error")}`;
-    }
-
-    function safeRun(label, fn) {
-      try {
-        return fn();
-      } catch (e) {
-        console.error(label, e);
-        showErrorBanner(`${label}: ${e && e.message ? e.message : e}`);
-        return null;
-      }
-    }
 
     // =========================
     // UTIL
@@ -781,8 +802,7 @@
         sponsorList = Array.isArray(data) ? data : (data.sponsors || []);
         cacheJSON(SPONSORS_CACHE_KEY, { ts: nowIso(), sponsors: sponsorList });
         return;
-      } catch (e) {
-        console.warn("Sponsors fetch failed:", e);
+      } catch {
         const cached = loadCachedJSON(SPONSORS_CACHE_KEY);
         sponsorList = cached?.sponsors || [];
       }
@@ -863,12 +883,7 @@
 
     function updateSponsorPinsOnMap() {
       if (!map) return;
-      if (typeof L === "undefined") return;
-
-      if (sponsorLayer) {
-        sponsorLayer.removeFrom(map);
-        sponsorLayer = null;
-      }
+      if (sponsorLayer) sponsorLayer.remove();
       sponsorLayer = L.layerGroup().addTo(map);
 
       const active = sponsorList.filter(s => s && s.active !== false);
@@ -912,12 +927,6 @@
     }
 
     function setupMap() {
-      if (typeof L === "undefined") {
-        setMapStatus("Map: unavailable (Leaflet failed to load)");
-        showErrorBanner("Leaflet failed to load. The map will be disabled, but the rest of the app should still work.");
-        return;
-      }
-
       const defaultLatLng = [37.8393, -84.27];
       map = L.map("map", { zoomControl: true }).setView(defaultLatLng, 7);
 
@@ -926,7 +935,7 @@
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(map);
 
-      setTimeout(() => map.invalidateSize(), 150);
+      setTimeout(() => map.invalidateSize(), 120);
 
       document.getElementById("center-ky-btn")?.addEventListener("click", () => {
         map.setView(defaultLatLng, 7);
@@ -934,7 +943,7 @@
     }
 
     function ensureUserLayers(lat, lng, accuracyMeters) {
-      if (!map || typeof L === "undefined") return;
+      if (!map) return;
       const latlng = [lat, lng];
 
       if (!userMarker) {
@@ -968,10 +977,7 @@
         alert("GPS is not supported in this browser.");
         return;
       }
-      if (!map) {
-        alert("Map is not available right now.");
-        return;
-      }
+      if (!map) return;
 
       setMapStatus("GPS: requesting permission…");
 
@@ -1046,10 +1052,10 @@
         );
         const meteo = await meteoResp.json();
 
-        const times = meteo.hourly?.time || [];
-        const temps = meteo.hourly?.temperature_2m || [];
-        const winds = meteo.hourly?.wind_speed_10m || [];
-        const precip = meteo.hourly?.precipitation || [];
+        const times = meteo.hourly.time || [];
+        const temps = meteo.hourly.temperature_2m || [];
+        const winds = meteo.hourly.wind_speed_10m || [];
+        const precip = meteo.hourly.precipitation || [];
 
         let nowIndex = 0;
         if (times.length) {
@@ -1220,7 +1226,7 @@
     }
 
     // =========================
-    // LAKE MODAL (NO OFFICIAL REGS LINK)
+    // LAKE MODAL (NO LINKS)
     // =========================
     function openLakeModal(lakeObj) {
       selectedLake = lakeObj;
@@ -1282,7 +1288,7 @@
 
       try {
         const resp = await fetch(`${BACKEND_URL}/lakes`, { cache: "no-store" });
-        if (!resp.ok) throw new Error(`Backend HTTP ${resp.status}`);
+        if (!resp.ok) throw new Error(\`Backend HTTP \${resp.status}\`);
         data = await resp.json();
         if (data.error) throw new Error(data.message || "Backend error");
         cacheLakeData(data);
@@ -1292,13 +1298,11 @@
         if (cached && cached.lakes && cached.lakes.length) {
           data = cached;
           fromCache = true;
-          showErrorBanner("Backend unreachable — using cached lake data.");
         } else {
           updatedLabel.textContent = "Updated: error";
           statusLine.textContent = "Could not reach backend — and no cached data available.";
           statusLine.classList.remove("ok");
           statusLine.classList.add("error");
-          showErrorBanner("Could not reach backend and no cached data exists. Check BACKEND_URL and CORS.");
           return;
         }
       }
@@ -1372,20 +1376,15 @@
         statusLine.classList.add("ok");
       }
 
-      safeRun("Chart", () => renderFloodChart(lakes));
-      safeRun("Alerts", () => maybeNotifyFavorites(lakes));
-      safeRun("Sponsor card", () => renderSponsorCard(pickSponsorForDisplay()));
+      renderFloodChart(lakes);
+      maybeNotifyFavorites(lakes);
+      renderSponsorCard(pickSponsorForDisplay());
     }
 
     // =========================
     // CHART
     // =========================
     function renderFloodChart(lakes) {
-      if (typeof Chart === "undefined") {
-        showErrorBanner("Chart.js failed to load. The chart will be disabled, but the rest of the app should still work.");
-        return;
-      }
-
       const canvas = document.getElementById("floodChart");
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
@@ -1453,7 +1452,7 @@
       const select = document.getElementById("chart-metric");
       select.addEventListener("change", () => {
         currentChartMetric = select.value;
-        if (window.lastLakeData) safeRun("Chart redraw", () => renderFloodChart(window.lastLakeData));
+        if (window.lastLakeData) renderFloodChart(window.lastLakeData);
       });
     }
 
@@ -1499,22 +1498,22 @@
     // INIT
     // =========================
     document.addEventListener("DOMContentLoaded", async () => {
-      safeRun("Boat mode", setupBoatMode);
-      safeRun("Weather", setupZipForm);
-      safeRun("Alerts toggle", setupAlertsToggle);
-      safeRun("Chart selector", setupChartMetricSelector);
-      safeRun("Disclaimer", setupDisclaimerModal);
-      safeRun("Lake modal", setupLakeModal);
+      setupBoatMode();
+      setupZipForm();
+      setupAlertsToggle();
+      setupChartMetricSelector();
+      setupDisclaimerModal();
+      setupLakeModal();
 
-      safeRun("Map", setupMap);
-      safeRun("GPS buttons", setupGpsButtons);
+      setupMap();
+      setupGpsButtons();
 
-      await safeRun("Sponsors", loadSponsors);
-      safeRun("Sponsor card", () => renderSponsorCard(pickSponsorForDisplay()));
-      safeRun("Sponsor pins", updateSponsorPinsOnMap);
+      await loadSponsors();
+      renderSponsorCard(pickSponsorForDisplay());
+      updateSponsorPinsOnMap();
 
-      safeRun("Fish limits", setupFishLimitsCard);
-      safeRun("Lakes", loadLakes);
+      setupFishLimitsCard();
+      loadLakes();
     });
   </script>
 </body>
