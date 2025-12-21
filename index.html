@@ -110,6 +110,11 @@
     }
     .card h2 { margin: 0 0 6px; font-size: 0.95rem; }
 
+    /* =========================
+       TOP LAYOUT: Sponsor (1), Weather (2), Map (3)
+       Desktop: sponsor left, weather right, map full width below
+       Sponsor + Weather match heights by design
+    ========================= */
     .top-grid {
       display: grid;
       gap: 10px;
@@ -134,6 +139,7 @@
       }
     }
 
+    /* Force equal height behavior for sponsor/weather row */
     .top-grid > section {
       height: 100%;
       display: flex;
@@ -141,6 +147,7 @@
       justify-content: flex-start;
     }
 
+    /* Buttons */
     .pill-btn {
       padding: 7px 12px;
       border-radius: 999px;
@@ -178,6 +185,7 @@
       transform: scale(1.1);
     }
 
+    /* Sponsor Card */
     .sponsor-wrap { display: flex; gap: 10px; align-items: center; min-height: 62px; }
     .sponsor-logo {
       width: 56px; height: 56px; border-radius: 14px;
@@ -190,6 +198,7 @@
     .sponsor-sub { margin: 2px 0 6px; font-size: 0.82rem; color: var(--text-muted); }
     .sponsor-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 
+    /* Weather */
     .zip-form {
       display: flex;
       align-items: center;
@@ -208,7 +217,7 @@
       outline: none;
     }
     .weather-footer {
-      margin-top: auto;
+      margin-top: auto; /* pushes footer to bottom so card feels balanced */
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
@@ -223,6 +232,7 @@
       gap: 4px;
     }
 
+    /* Map */
     #map { height: 340px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-subtle); }
     .map-legend {
       display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;
@@ -235,12 +245,14 @@
     .dot.user { background: #22c55e; }
     .dot.sponsor { background: #f59e0b; }
 
+    /* Main grid below top area */
     .main-grid {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
+    /* Fish limits - clean tiles (no ruler) */
     .fish-grid {
       margin-top: 10px;
       display: grid;
@@ -320,6 +332,7 @@
       line-height: 1.35;
     }
 
+    /* Lake table */
     .table-wrapper {
       overflow: auto;
       max-height: calc(100vh - 260px);
@@ -359,6 +372,7 @@
     .clickable-row { cursor: pointer; }
     .clickable-row:hover { outline: 1px solid rgba(59,130,246,0.35); outline-offset: -1px; }
 
+    /* Chart */
     .chart-card { margin-top: 10px; }
     .chart-header {
       display: flex;
@@ -372,6 +386,7 @@
     .chart-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; }
     .chart-container { position: relative; height: 340px; max-height: 380px; }
 
+    /* Footer */
     .disclaimer-footer {
       width: 100%;
       text-align: center;
@@ -383,6 +398,7 @@
     }
     .boat-mode .disclaimer-footer { color: #111827; opacity: 0.75; }
 
+    /* Modal (Lake details) */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -470,7 +486,9 @@
       </div>
     </header>
 
+    <!-- TOP: Sponsor + Weather (row), Map below (full width) -->
     <div class="top-grid">
+      <!-- Area 1: Sponsor (left on desktop) -->
       <section class="card card-soft area-sponsor">
         <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Sponsored</div>
         <div id="sponsor-content" class="sponsor-wrap">
@@ -478,6 +496,7 @@
         </div>
       </section>
 
+      <!-- Area 2: Weather (right on desktop) -->
       <section class="card card-soft area-weather">
         <h2 id="weather-title">Weather – Morehead, KY</h2>
         <div class="subtitle" id="weather-meta">Default: Morehead, KY — enter ZIP to change.</div>
@@ -506,6 +525,7 @@
         </div>
       </section>
 
+      <!-- Area 3: Map (full width) -->
       <section class="card card-soft area-map">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
           <div>
@@ -535,6 +555,7 @@
     </div>
 
     <main class="main-grid">
+      <!-- Fish Limits -->
       <section class="card card-soft">
         <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap;">
           <div>
@@ -558,6 +579,7 @@
         </div>
       </section>
 
+      <!-- Lake table + chart -->
       <section class="card">
         <div class="table-wrapper">
           <table>
@@ -624,31 +646,26 @@
       <div class="modal-body">
         <div id="lake-modal-stats"></div>
 
-        <!-- ✅ Added: regs status + actions (these IDs are used by your JS) -->
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px;">
-          <div class="subtitle" id="lake-regs-status">—</div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button id="lake-regs-refresh" class="pill-btn" type="button">Refresh regs</button>
-            <a id="lake-regs-link" class="pill-btn primary" href="#" target="_blank" rel="noopener">Open official regs</a>
+document.getElementById("lake-center-btn").onclick = () => centerLakeOnMap(lakeObj);
+document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj);
+
+          <div style="margin-top:10px;">
+            <table class="regs-table">
+              <thead>
+                <tr>
+                  <th style="width:34%;">Species</th>
+                  <th>Regulation</th>
+                </tr>
+              </thead>
+              <tbody id="lake-regs-body">
+                <tr><td colspan="2">Loading…</td></tr>
+              </tbody>
+            </table>
           </div>
-        </div>
 
-        <div style="margin-top:10px;">
-          <table class="regs-table">
-            <thead>
-              <tr>
-                <th style="width:34%;">Species</th>
-                <th>Regulation</th>
-              </tr>
-            </thead>
-            <tbody id="lake-regs-body">
-              <tr><td colspan="2">Loading…</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="subtitle" style="margin-top:8px;">
-          Showing only your selected species (Muskie, Bass, Crappie, Bluegill, Sauger/Walleye). If a row says “Statewide regs apply”, use the statewide card above.
+          <div class="subtitle" style="margin-top:8px;">
+            Showing only your selected species (Muskie, Bass, Crappie, Bluegill, Sauger/Walleye). If a row says “Statewide regs apply”, use the statewide card above.
+          </div>
         </div>
 
         <div class="modal-section">
@@ -834,16 +851,16 @@
       }
 
       const lakesLabel = (sponsor.lakes && sponsor.lakes.length)
-        ? \`Serving: \${sponsor.lakes.join(", ")}\`
-        : (sponsor.region ? \`Serving: \${sponsor.region}\` : "");
+        ? `Serving: ${sponsor.lakes.join(", ")}`
+        : (sponsor.region ? `Serving: ${sponsor.region}` : "");
 
       const logo = sponsor.logoUrl
-        ? \`<img class="sponsor-logo" src="\${sponsor.logoUrl}" alt="\${safeText(sponsor.name)} logo" />\`
-        : \`<div class="sponsor-logo" style="display:flex; align-items:center; justify-content:center; font-weight:1000;">
-             \${(safeText(sponsor.name || "S").slice(0,1) || "S").toUpperCase()}
-           </div>\`;
+        ? `<img class="sponsor-logo" src="${sponsor.logoUrl}" alt="${safeText(sponsor.name)} logo" />`
+        : `<div class="sponsor-logo" style="display:flex; align-items:center; justify-content:center; font-weight:1000;">
+             ${(safeText(sponsor.name || "S").slice(0,1) || "S").toUpperCase()}
+           </div>`;
 
-      const phoneHref = sponsor.phone ? \`tel:\${safeText(sponsor.phone).replace(/[^\\d+]/g, "")}\` : null;
+      const phoneHref = sponsor.phone ? `tel:${safeText(sponsor.phone).replace(/[^\d+]/g, "")}` : null;
       const directionsHref = sponsor.directionsUrl || sponsor.googleMapsUrl || null;
       const websiteHref = sponsor.website || null;
 
@@ -882,7 +899,7 @@
         const name = safeText(s.name || "Sponsor");
         const cta = safeText(s.cta || "");
         const website = s.website ? `<div style="margin-top:6px;"><a href="${s.website}" target="_blank" rel="noopener">Website</a></div>` : "";
-        const phone = s.phone ? `<div style="margin-top:6px;"><a href="tel:${safeText(s.phone).replace(/[^\\d+]/g,"")}">Call</a></div>` : "";
+        const phone = s.phone ? `<div style="margin-top:6px;"><a href="tel:${safeText(s.phone).replace(/[^\d+]/g,"")}">Call</a></div>` : "";
         const dir = (s.directionsUrl || s.googleMapsUrl)
           ? `<div style="margin-top:6px;"><a href="${(s.directionsUrl||s.googleMapsUrl)}" target="_blank" rel="noopener">Directions</a></div>`
           : "";
@@ -914,7 +931,7 @@
     }
 
     function setupMap() {
-      const defaultLatLng = [37.8393, -84.27];
+      const defaultLatLng = [37.8393, -84.27]; // KY center
       map = L.map("map", { zoomControl: true }).setView(defaultLatLng, 7);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -1081,7 +1098,7 @@
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         const zip = input.value.trim();
-        if (/^\\d{5}$/.test(zip)) loadWeatherByZip(zip);
+        if (/^\d{5}$/.test(zip)) loadWeatherByZip(zip);
       });
 
       loadWeatherByZip(input.value.trim() || "40351");
@@ -1157,14 +1174,49 @@
     }
 
     // =========================
-    // FISH LIMITS
+    // FISH LIMITS (clean tiles)
     // =========================
     const DEFAULT_FISH_LIMITS = [
-      { key: "Muskie", icon: "🐟", minLabel: '30" min', daily: "1", possession: "2", notes: "Statewide default." },
-      { key: "Bass (Largemouth / Smallmouth / Spotted)", icon: "🎣", minLabel: '12" min (LM/SM), none (Spotted)', daily: "6*", possession: "12*", notes: "*No more than 4 may be smallmouth." },
-      { key: "Crappie", icon: "🐠", minLabel: "No min size (statewide)", daily: "20*", possession: "40*", notes: "*Black & white combined. Special regs exist on some lakes." },
-      { key: "Bluegill", icon: "🐟", minLabel: "No min size", daily: "15", possession: "30", notes: "Panfish daily limit." },
-      { key: "Sauger / Walleye", icon: "🐟", minLabel: '14" min (combined)', daily: "6*", possession: "12*", notes: "*Walleye, sauger, and hybrids combined." }
+      {
+        key: "Muskie",
+        icon: "🐟",
+        minLabel: '30" min',
+        daily: "1",
+        possession: "2",
+        notes: "Statewide default."
+      },
+      {
+        key: "Bass (Largemouth / Smallmouth / Spotted)",
+        icon: "🎣",
+        minLabel: '12" min (LM/SM), none (Spotted)',
+        daily: "6*",
+        possession: "12*",
+        notes: "*No more than 4 may be smallmouth."
+      },
+      {
+        key: "Crappie",
+        icon: "🐠",
+        minLabel: "No min size (statewide)",
+        daily: "20*",
+        possession: "40*",
+        notes: "*Black & white combined. Special regs exist on some lakes."
+      },
+      {
+        key: "Bluegill",
+        icon: "🐟",
+        minLabel: "No min size",
+        daily: "15",
+        possession: "30",
+        notes: "Panfish daily limit."
+      },
+      {
+        key: "Sauger / Walleye",
+        icon: "🐟",
+        minLabel: '14" min (combined)',
+        daily: "6*",
+        possession: "12*",
+        notes: "*Walleye, sauger, and hybrids combined."
+      }
     ];
 
     function setupFishLimitsCard() {
@@ -1334,10 +1386,8 @@
       const subtitle = document.getElementById("lake-modal-subtitle");
       const stats = document.getElementById("lake-modal-stats");
       const regsBody = document.getElementById("lake-regs-body");
-
       const regsStatus = document.getElementById("lake-regs-status");
       const regsLink = document.getElementById("lake-regs-link");
-      const refreshBtn = document.getElementById("lake-regs-refresh");
 
       title.textContent = safeText(lakeObj.project || "Lake Details");
       subtitle.textContent = safeText(lakeObj.basin || "—");
@@ -1363,22 +1413,17 @@
         </div>
       `;
 
-      if (regsBody) regsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
-      if (regsStatus) regsStatus.textContent = "Loading…";
+      regsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
+      regsStatus.textContent = "Loading…";
 
       const wid = projectToWid(lakeObj.project);
-      if (regsLink) {
-        regsLink.href = wid ? officialRegsUrlForWid(wid) : "https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx";
-      }
-
-      if (refreshBtn) refreshBtn.onclick = () => loadLakeRegsIntoModal(lakeObj, true);
+      regsLink.href = wid ? officialRegsUrlForWid(wid) : "https://fw.ky.gov/Fish/Pages/Species-Sizes-and-Limits.aspx";
 
       backdrop.style.display = "flex";
 
-      const centerBtn = document.getElementById("lake-center-btn");
-      const dirBtn = document.getElementById("lake-directions-btn");
-      if (centerBtn) centerBtn.onclick = () => centerLakeOnMap(lakeObj);
-      if (dirBtn) dirBtn.href = lakeDirectionsUrl(lakeObj);
+      document.getElementById("lake-center-btn").onclick = () => centerLakeOnMap(lakeObj);
+      document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj);
+      document.getElementById("lake-regs-refresh").onclick = () => loadLakeRegsIntoModal(lakeObj, true);
 
       loadLakeRegsIntoModal(lakeObj, false);
     }
@@ -1392,8 +1437,8 @@
       const regsBody = document.getElementById("lake-regs-body");
       const regsStatus = document.getElementById("lake-regs-status");
 
-      if (regsBody) regsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
-      if (regsStatus) regsStatus.textContent = forceRefresh ? "Refreshing…" : "Loading…";
+      regsBody.innerHTML = `<tr><td colspan="2">Loading…</td></tr>`;
+      regsStatus.textContent = forceRefresh ? "Refreshing…" : "Loading…";
 
       const res = await getLakeSpecialRegs(lakeObj.project, forceRefresh);
 
@@ -1404,9 +1449,7 @@
         res.source === "failed" ? "Could not fetch regs (tap Open official regs)" :
         "Unknown";
 
-      if (regsStatus) regsStatus.textContent = srcLabel;
-
-      if (!regsBody) return;
+      regsStatus.textContent = srcLabel;
 
       if (!res.rows || !res.rows.length) {
         regsBody.innerHTML = `<tr><td colspan="2">No special regs found here for your selected species, or the official page couldn't be fetched. Use the Official link to verify.</td></tr>`;
@@ -1434,7 +1477,7 @@
         map.setView([lat, lon], 11);
         L.popup().setLatLng([lat, lon]).setContent(`<strong>${safeText(lakeObj.project)}</strong>`).openOn(map);
       } else {
-        alert("This lake doesn't have coordinates yet. Add lat/lon in your backend per lake to center accurately.");
+        alert("This lake doesn't have coordinates yet. If you add lat/lon in your backend for each lake, this button will center accurately.");
       }
     }
 
