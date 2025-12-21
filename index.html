@@ -598,7 +598,7 @@
             </thead>
             <tbody id="lakes-body">
               <tr>
-                <td colspan="10" style="padding: 10px 8px; font-size: 0.85rem">Loading live lake data…</td>
+                <td colspan="9" style="padding: 10px 8px; font-size: 0.85rem">Loading live lake data…</td>
               </tr>
             </tbody>
           </table>
@@ -1564,7 +1564,6 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
           <td class="num">${formatNumber(lake.todayPool, 1)}</td>
           <td class="num ${devClass}">${formatNumber(lake.deviation, 1)}</td>
           <td class="num ${d24Class}">${formatNumber(lake.change24h, 1)}</td>
-          <td class="num">${formatNumber(lake.precip24h, 2)}</td>
           <td class="num">${formatNumber(lake.inflow, 0)}</td>
           <td class="num">${formatNumber(lake.outflow, 0)}</td>
           <td class="num">${formatNumber(lake.percentUtil, 2)}</td>
@@ -1745,5 +1744,6 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
   </script>
 </body>
 </html>
+
 
 
