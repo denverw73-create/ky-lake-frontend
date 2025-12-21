@@ -591,7 +591,6 @@
                 <th class="num">Pool</th>
                 <th class="num">Dev.</th>
                 <th class="num">24h Δ</th>
-                <th class="num">Rain</th>
                 <th class="num">Inflow</th>
                 <th class="num">Outflow</th>
                 <th class="num">% Util</th>
@@ -1587,7 +1586,11 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
       }
 
       const ts = data.timestamp ? new Date(data.timestamp) : new Date();
-      updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
+     updatedLabel.textContent = `Updated: ${ts.toLocaleDateString(undefined, {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+})}`;
 
       if (fromCache) {
         statusLine.textContent = `Using cached data (${lakes.length} lakes) – offline`;
@@ -1742,4 +1745,5 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
   </script>
 </body>
 </html>
+
 
