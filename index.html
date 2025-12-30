@@ -1092,28 +1092,62 @@ out center tags;
     }
 
    function setupMap() {
+  const defaultLatLng = [37.8393, -84.27]; // KY center
 
+  // Create map
+  map = L.map("map", {
+    zoomControl: true,
+    preferCanvas: true
+  }).setView(defaultLatLng, 7);
 
-  // Default map
-  osmLayer.addTo(map);
+  // -------------------------
+  // Base layers
+  // -------------------------
+  const standardLayer = L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors"
+    }
+  );
 
-  // Layer toggle control (top-right of map)
-L.control.layers(
-  {
-    "Standard (OSM)": osmLayer,
-    "Satellite": satelliteLayer
-  },
-  {},
-  { collapsed: true }
-).addTo(map);
+  const satelliteLayer = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    {
+      maxZoom: 19,
+      attribution: "Tiles © Esri — World Imagery"
+    }
+  );
 
+  // Default map style
+  standardLayer.addTo(map);
 
-  setTimeout(() => map.invalidateSize(), 120);
+  // -------------------------
+  // Layer toggle (top-right)
+  // -------------------------
+  L.control.layers(
+    {
+      "Standard": standardLayer,
+      "Satellite": satelliteLayer
+    },
+    {},
+    {
+      collapsed: true,
+      position: "topright"
+    }
+  ).addTo(map);
 
+  // Fix sizing after render
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 150);
+
+  // Center KY button
   document.getElementById("center-ky-btn")?.addEventListener("click", () => {
     map.setView(defaultLatLng, 7);
   });
 }
+
 
     function ensureUserLayers(lat, lng, accuracyMeters) {
       if (!map) return;
@@ -1872,6 +1906,7 @@ L.control.layers(
   </script>
 </body>
 </html>
+
 
 
 
