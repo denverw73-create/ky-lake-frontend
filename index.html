@@ -1092,38 +1092,21 @@ out center tags;
     }
 
    function setupMap() {
-  const defaultLatLng = [37.8393, -84.27]; // KY center
-  map = L.map("map", { zoomControl: true }).setView(defaultLatLng, 7);
 
-  // --- Base layers (toggle) ---
-  const osmLayer = L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap contributors"
-    }
-  );
-
-  const oceanLayer = L.tileLayer(
-    "https://services.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}",
-    {
-      maxZoom: 17,
-      attribution: "Tiles © Esri — Ocean Basemap"
-    }
-  );
 
   // Default map
   osmLayer.addTo(map);
 
   // Layer toggle control (top-right of map)
-  L.control.layers(
-    {
-      "Standard (OSM)": osmLayer,
-      "Nautical (Ocean)": oceanLayer
-    },
-    {},
-    { collapsed: true }
-  ).addTo(map);
+L.control.layers(
+  {
+    "Standard (OSM)": osmLayer,
+    "Satellite": satelliteLayer
+  },
+  {},
+  { collapsed: true }
+).addTo(map);
+
 
   setTimeout(() => map.invalidateSize(), 120);
 
@@ -1889,5 +1872,6 @@ out center tags;
   </script>
 </body>
 </html>
+
 
 
