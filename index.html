@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <title>Anchor Point KY</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="manifest" href="/manifest.json" />
-<link rel="icon" type="image/png" href="/icons/favicon-32.png" sizes="32x32" />
-<link rel="icon" type="image/png" href="/icons/favicon-16.png" sizes="16x16" />
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
 
   <!-- PWA -->
   <meta name="theme-color" content="#021326" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" type="image/png" href="/icons/ky-lake-192.png" />
+  <link rel="icon" type="image/png" href="/icons/favicon-32.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="/icons/favicon-16.png" sizes="16x16" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,99 +20,11 @@
   <!-- Leaflet (Map) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-// KY Fish & Wildlife map service (boat access layers)
-const KDFWR_MAPSERVER = "https://kygisserver.ky.gov/arcgis/rest/services/WGS84WM_Services/Ky_Fish_Wildlife_WGS84WM/MapServer";
 
-// Layer IDs from the service:
-// 0 = Any Boat Access, 1 = Small Boat Access
-const RAMP_LAYERS = [0, 1];
-
-let rampsCluster = null;
-
-function ensureRampsLayer() {
-  if (!map) return;
-  if (!rampsCluster) {
-    rampsCluster = L.markerClusterGroup({ disableClusteringAtZoom: 14 });
-    map.addLayer(rampsCluster);
-  }
-}
-
-async function fetchRampsInBounds(layerId, bounds) {
-  // ArcGIS expects bbox in the service’s spatial ref (this MapServer is 3857) :contentReference[oaicite:1]{index=1}
-  // Leaflet bounds are lat/lng (4326), but ArcGIS will accept bbox in 4326 if we set inSR/outSR=4326.
-  const b = bounds;
-  const west = b.getWest(), south = b.getSouth(), east = b.getEast(), north = b.getNorth();
-
-  const url =
-    `${KDFWR_MAPSERVER}/${layerId}/query` +
-    `?where=1%3D1` +
-    `&geometry=${west},${south},${east},${north}` +
-    `&geometryType=esriGeometryEnvelope` +
-    `&inSR=4326` +
-    `&outSR=4326` +
-    `&outFields=*` +
-    `&returnGeometry=true` +
-    `&f=geojson`;
-
-  const resp = await fetch(url, { cache: "no-store" });
-  if (!resp.ok) throw new Error(`ramps layer ${layerId} http ${resp.status}`);
-  return await resp.json(); // GeoJSON FeatureCollection
-}
-
-function rampPopupHtml(props, lat, lon) {
-  const name = props?.Name || props?.NAME || props?.SiteName || props?.SITENAME || "Boat Access";
-  const notes = props?.Notes || props?.NOTES || props?.Type || props?.TYPE || "";
-  return `
-    <div style="font-weight:1000; margin-bottom:4px;">${name}</div>
-    <div style="opacity:.85;">${notes}</div>
-    <div style="margin-top:8px;">
-      <a target="_blank" rel="noopener"
-         href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}">
-        Directions
-      </a>
-    </div>
-  `;
-}
-
-async function loadRampsInView() {
-  if (!map) return;
-  ensureRampsLayer();
-
-  // Clear old ramps and reload only what’s visible
-  rampsCluster.clearLayers();
-
-  const bounds = map.getBounds();
-
-  for (const layerId of RAMP_LAYERS) {
-    const geojson = await fetchRampsInBounds(layerId, bounds);
-
-    L.geoJSON(geojson, {
-      pointToLayer: (feature, latlng) => L.marker(latlng),
-      onEachFeature: (feature, layer) => {
-        const lat = layer.getLatLng().lat;
-        const lon = layer.getLatLng().lng;
-        layer.bindPopup(rampPopupHtml(feature.properties, lat, lon));
-      }
-    }).eachLayer(l => rampsCluster.addLayer(l));
-  }
-}
-
-// Throttle reload on pan/zoom
-let rampsTimer = null;
-function setupRampsAutoLoad() {
-  if (!map) return;
-
-  loadRampsInView();
-
-  map.on("moveend", () => {
-    clearTimeout(rampsTimer);
-    rampsTimer = setTimeout(loadRampsInView, 350);
-  });
-}
+  <!-- Marker clustering (for ramps) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
   <style>
     :root {
@@ -207,11 +119,6 @@ function setupRampsAutoLoad() {
     }
     .card h2 { margin: 0 0 6px; font-size: 0.95rem; }
 
-    /* =========================
-       TOP LAYOUT: Sponsor (1), Weather (2), Map (3)
-       Desktop: sponsor left, weather right, map full width below
-       Sponsor + Weather match heights by design
-    ========================= */
     .top-grid {
       display: grid;
       gap: 10px;
@@ -236,7 +143,6 @@ function setupRampsAutoLoad() {
       }
     }
 
-    /* Force equal height behavior for sponsor/weather row */
     .top-grid > section {
       height: 100%;
       display: flex;
@@ -244,7 +150,6 @@ function setupRampsAutoLoad() {
       justify-content: flex-start;
     }
 
-    /* Buttons */
     .pill-btn {
       padding: 7px 12px;
       border-radius: 999px;
@@ -282,7 +187,6 @@ function setupRampsAutoLoad() {
       transform: scale(1.1);
     }
 
-    /* Sponsor Card */
     .sponsor-wrap { display: flex; gap: 10px; align-items: center; min-height: 62px; }
     .sponsor-logo {
       width: 56px; height: 56px; border-radius: 14px;
@@ -295,7 +199,6 @@ function setupRampsAutoLoad() {
     .sponsor-sub { margin: 2px 0 6px; font-size: 0.82rem; color: var(--text-muted); }
     .sponsor-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 
-    /* Weather */
     .zip-form {
       display: flex;
       align-items: center;
@@ -314,7 +217,7 @@ function setupRampsAutoLoad() {
       outline: none;
     }
     .weather-footer {
-      margin-top: auto; /* pushes footer to bottom so card feels balanced */
+      margin-top: auto;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
@@ -329,27 +232,18 @@ function setupRampsAutoLoad() {
       gap: 4px;
     }
 
-    /* Map */
-    #map { height: 340px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-subtle); }
+    #map { height: 360px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-subtle); }
     .map-legend {
       display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;
       color: var(--text-muted); font-size:0.78rem;
     }
-    .dot {
-      width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px;
-      background: var(--accent);
-    }
+    .dot { width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px; background: var(--accent); }
     .dot.user { background: #22c55e; }
     .dot.sponsor { background: #f59e0b; }
+    .dot.ramp { background: #a855f7; }
 
-    /* Main grid below top area */
-    .main-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    .main-grid { display: flex; flex-direction: column; gap: 10px; }
 
-    /* Fish limits - clean tiles (no ruler) */
     .fish-grid {
       margin-top: 10px;
       display: grid;
@@ -429,7 +323,6 @@ function setupRampsAutoLoad() {
       line-height: 1.35;
     }
 
-    /* Lake table */
     .table-wrapper {
       overflow: auto;
       max-height: calc(100vh - 260px);
@@ -469,7 +362,6 @@ function setupRampsAutoLoad() {
     .clickable-row { cursor: pointer; }
     .clickable-row:hover { outline: 1px solid rgba(59,130,246,0.35); outline-offset: -1px; }
 
-    /* Chart */
     .chart-card { margin-top: 10px; }
     .chart-header {
       display: flex;
@@ -483,7 +375,6 @@ function setupRampsAutoLoad() {
     .chart-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; }
     .chart-container { position: relative; height: 340px; max-height: 380px; }
 
-    /* Footer */
     .disclaimer-footer {
       width: 100%;
       text-align: center;
@@ -495,7 +386,6 @@ function setupRampsAutoLoad() {
     }
     .boat-mode .disclaimer-footer { color: #111827; opacity: 0.75; }
 
-    /* Modal (Lake details) */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -573,7 +463,7 @@ function setupRampsAutoLoad() {
       <div class="title-row">
         <div>
           <h1>Anchor Point KY</h1>
-          <div class="subtitle">Live levels, maps, sponsors, and fish regs for KY waters</div>
+          <div class="subtitle">Live levels, maps, sponsors, and fish regs for your favorite KY waters</div>
         </div>
         <div class="status-pill">
           <strong id="updated-label">Updated: —</strong>
@@ -583,9 +473,8 @@ function setupRampsAutoLoad() {
       </div>
     </header>
 
-    <!-- TOP: Sponsor + Weather (row), Map below (full width) -->
     <div class="top-grid">
-      <!-- Area 1: Sponsor (left on desktop) -->
+      <!-- Sponsor -->
       <section class="card card-soft area-sponsor">
         <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px;">Sponsored</div>
         <div id="sponsor-content" class="sponsor-wrap">
@@ -593,7 +482,7 @@ function setupRampsAutoLoad() {
         </div>
       </section>
 
-      <!-- Area 2: Weather (right on desktop) -->
+      <!-- Weather -->
       <section class="card card-soft area-weather">
         <h2 id="weather-title">Weather – Morehead, KY</h2>
         <div class="subtitle" id="weather-meta">Default: Morehead, KY — enter ZIP to change.</div>
@@ -622,14 +511,21 @@ function setupRampsAutoLoad() {
         </div>
       </section>
 
-      <!-- Area 3: Map (full width) -->
+      <!-- Map -->
       <section class="card card-soft area-map">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
           <div>
             <h2 style="margin:0;">Map & GPS</h2>
             <div class="subtitle" id="map-status">GPS: idle</div>
           </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <label class="boat-toggle" style="margin-right:6px;">
+              <input type="checkbox" id="ramps-toggle" checked />
+              <span>Show ramps</span>
+            </label>
+            <span class="subtitle" id="ramps-count" style="font-size:0.78rem;">Ramps in view: —</span>
+
             <button id="gps-btn" class="pill-btn primary" type="button">Use GPS</button>
             <button id="gps-stop-btn" class="pill-btn" type="button">Stop</button>
             <button id="center-ky-btn" class="pill-btn" type="button">Center KY</button>
@@ -641,7 +537,8 @@ function setupRampsAutoLoad() {
           <div class="map-legend">
             <span><span class="dot user"></span>Your GPS</span>
             <span><span class="dot sponsor"></span>Sponsors</span>
-            <span><span class="dot"></span>Tap a sponsor pin for details</span>
+            <span><span class="dot ramp"></span>Boat ramps</span>
+            <span><span class="dot"></span>Tap pins for details</span>
           </div>
         </div>
 
@@ -743,8 +640,17 @@ function setupRampsAutoLoad() {
       <div class="modal-body">
         <div id="lake-modal-stats"></div>
 
-document.getElementById("lake-center-btn").onclick = () => centerLakeOnMap(lakeObj);
-document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj);
+        <div class="modal-section">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="tag ok">Special regulations</span>
+              <span class="subtitle" id="lake-regs-status">—</span>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <a id="lake-regs-link" class="pill-btn" href="#" target="_blank" rel="noopener">Open official regs</a>
+              <button id="lake-regs-refresh" class="pill-btn" type="button">Refresh</button>
+            </div>
+          </div>
 
           <div style="margin-top:10px;">
             <table class="regs-table">
@@ -829,6 +735,15 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
     let accuracyCircle = null;
     let gpsWatchId = null;
     let sponsorLayer = null;
+
+    // Ramps
+    let rampsCluster = null;
+    let rampsTimer = null;
+
+    // KY Fish & Wildlife ArcGIS MapServer
+    const KDFWR_MAPSERVER = "https://kygisserver.ky.gov/arcgis/rest/services/WGS84WM_Services/Ky_Fish_Wildlife_WGS84WM/MapServer";
+    // Layers: 0 = Any Boat Access, 1 = Small Boat Access
+    const RAMP_LAYERS = [0, 1];
 
     let selectedLake = null;
 
@@ -1030,7 +945,6 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
     function setupMap() {
       const defaultLatLng = [37.8393, -84.27]; // KY center
       map = L.map("map", { zoomControl: true }).setView(defaultLatLng, 7);
-setupRampsAutoLoad();
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
@@ -1125,6 +1039,128 @@ setupRampsAutoLoad();
     function setupGpsButtons() {
       document.getElementById("gps-btn")?.addEventListener("click", startGps);
       document.getElementById("gps-stop-btn")?.addEventListener("click", stopGps);
+    }
+
+    // =========================
+    // BOAT RAMPS (LOAD ONLY IN VIEW)
+    // =========================
+    function rampsEnabled() {
+      const t = document.getElementById("ramps-toggle");
+      return t ? t.checked : true;
+    }
+
+    function setRampsCount(n) {
+      const el = document.getElementById("ramps-count");
+      if (el) el.textContent = `Ramps in view: ${typeof n === "number" ? n : "—"}`;
+    }
+
+    function ensureRampsLayer() {
+      if (!map) return;
+      if (!rampsCluster) {
+        rampsCluster = L.markerClusterGroup({ disableClusteringAtZoom: 14 });
+        map.addLayer(rampsCluster);
+      }
+    }
+
+    async function fetchRampsInBounds(layerId, bounds) {
+      const west = bounds.getWest(), south = bounds.getSouth(), east = bounds.getEast(), north = bounds.getNorth();
+
+      const url =
+        `${KDFWR_MAPSERVER}/${layerId}/query` +
+        `?where=1%3D1` +
+        `&geometry=${west},${south},${east},${north}` +
+        `&geometryType=esriGeometryEnvelope` +
+        `&inSR=4326` +
+        `&outSR=4326` +
+        `&outFields=*` +
+        `&returnGeometry=true` +
+        `&f=geojson`;
+
+      const resp = await fetch(url, { cache: "no-store" });
+      if (!resp.ok) throw new Error(`ramps layer ${layerId} http ${resp.status}`);
+      return await resp.json();
+    }
+
+    function rampPopupHtml(props, lat, lon) {
+      const name =
+        props?.Name || props?.NAME || props?.SiteName || props?.SITENAME || props?.SITE_NAME ||
+        props?.FACILITY || props?.Facility || "Boat Access";
+
+      const kind =
+        props?.Type || props?.TYPE || props?.Access || props?.ACCESS || props?.ACCESS_TYPE ||
+        props?.Notes || props?.NOTES || "";
+
+      return `
+        <div style="font-weight:1000; margin-bottom:4px;">${safeText(name)}</div>
+        <div style="opacity:.85;">${safeText(kind)}</div>
+        <div style="margin-top:8px;">
+          <a target="_blank" rel="noopener"
+             href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}">
+            Directions
+          </a>
+        </div>
+      `;
+    }
+
+    function makeRampMarker(latlng) {
+      // simple purple circle marker for ramps
+      return L.circleMarker(latlng, {
+        radius: 6,
+        weight: 2,
+        color: "#a855f7",
+        fillColor: "#a855f7",
+        fillOpacity: 0.85
+      });
+    }
+
+    async function loadRampsInView() {
+      if (!map) return;
+
+      if (!rampsEnabled()) {
+        if (rampsCluster) rampsCluster.clearLayers();
+        setRampsCount(0);
+        return;
+      }
+
+      ensureRampsLayer();
+      rampsCluster.clearLayers();
+      setRampsCount("…");
+
+      const bounds = map.getBounds();
+      let total = 0;
+
+      try {
+        for (const layerId of RAMP_LAYERS) {
+          const geojson = await fetchRampsInBounds(layerId, bounds);
+          const layer = L.geoJSON(geojson, {
+            pointToLayer: (feature, latlng) => makeRampMarker(latlng),
+            onEachFeature: (feature, lyr) => {
+              const ll = lyr.getLatLng();
+              lyr.bindPopup(rampPopupHtml(feature.properties, ll.lat, ll.lng));
+            }
+          });
+
+          total += (geojson?.features?.length || 0);
+          layer.eachLayer(l => rampsCluster.addLayer(l));
+        }
+        setRampsCount(total);
+      } catch (e) {
+        console.warn("Ramp load failed:", e);
+        setRampsCount("error");
+      }
+    }
+
+    function setupRampsAutoLoad() {
+      const toggle = document.getElementById("ramps-toggle");
+      if (toggle) {
+        toggle.addEventListener("change", () => loadRampsInView());
+      }
+
+      loadRampsInView();
+      map.on("moveend", () => {
+        clearTimeout(rampsTimer);
+        rampsTimer = setTimeout(loadRampsInView, 350);
+      });
     }
 
     // =========================
@@ -1275,46 +1311,11 @@ setupRampsAutoLoad();
     // FISH LIMITS (clean tiles)
     // =========================
     const DEFAULT_FISH_LIMITS = [
-      {
-        key: "Muskie",
-        icon: "🐟",
-        minLabel: '30" min',
-        daily: "1",
-        possession: "2",
-        notes: "Statewide default."
-      },
-      {
-        key: "Bass (Largemouth / Smallmouth / Spotted)",
-        icon: "🎣",
-        minLabel: '12" min (LM/SM), none (Spotted)',
-        daily: "6*",
-        possession: "12*",
-        notes: "*No more than 4 may be smallmouth."
-      },
-      {
-        key: "Crappie",
-        icon: "🐠",
-        minLabel: "No min size (statewide)",
-        daily: "20*",
-        possession: "40*",
-        notes: "*Black & white combined. Special regs exist on some lakes."
-      },
-      {
-        key: "Bluegill",
-        icon: "🐟",
-        minLabel: "No min size",
-        daily: "15",
-        possession: "30",
-        notes: "Panfish daily limit."
-      },
-      {
-        key: "Sauger / Walleye",
-        icon: "🐟",
-        minLabel: '14" min (combined)',
-        daily: "6*",
-        possession: "12*",
-        notes: "*Walleye, sauger, and hybrids combined."
-      }
+      { key: "Muskie", icon: "🐟", minLabel: '30" min', daily: "1", possession: "2", notes: "Statewide default." },
+      { key: "Bass (Largemouth / Smallmouth / Spotted)", icon: "🎣", minLabel: '12" min (LM/SM), none (Spotted)', daily: "6*", possession: "12*", notes: "*No more than 4 may be smallmouth." },
+      { key: "Crappie", icon: "🐠", minLabel: "No min size (statewide)", daily: "20*", possession: "40*", notes: "*Black & white combined. Special regs exist on some lakes." },
+      { key: "Bluegill", icon: "🐟", minLabel: "No min size", daily: "15", possession: "30", notes: "Panfish daily limit." },
+      { key: "Sauger / Walleye", icon: "🐟", minLabel: '14" min (combined)', daily: "6*", possession: "12*", notes: "*Walleye, sauger, and hybrids combined." }
     ];
 
     function setupFishLimitsCard() {
@@ -1332,7 +1333,6 @@ setupRampsAutoLoad();
 
       function render(idx) {
         const f = DEFAULT_FISH_LIMITS[idx] || DEFAULT_FISH_LIMITS[0];
-
         panel.innerHTML = `
           <div class="fish-box">
             <div class="fish-head">
@@ -1544,7 +1544,7 @@ setupRampsAutoLoad();
         res.source === "live" ? "Loaded from official site" :
         res.source === "cache" ? "Loaded from cache" :
         res.source === "stale_cache" ? "Using cached regs (offline/blocked)" :
-        res.source === "failed" ? "Could not fetch regs (tap Open official regs)" :
+        res.source === "failed" ? "Could not fetch regs (use Open official regs)" :
         "Unknown";
 
       regsStatus.textContent = srcLabel;
@@ -1609,7 +1609,7 @@ setupRampsAutoLoad();
 
       try {
         const resp = await fetch(`${BACKEND_URL}/lakes`, { cache: "no-store" });
-        if (!resp.ok) throw new Error(`Backend HTTP ${resp.status}`);
+        if (!resp.ok) throw new Error(\`Backend HTTP \${resp.status}\`);
         data = await resp.json();
         if (data.error) throw new Error(data.message || "Backend error");
         cacheLakeData(data);
@@ -1828,6 +1828,7 @@ setupRampsAutoLoad();
 
       setupMap();
       setupGpsButtons();
+      setupRampsAutoLoad();
 
       await loadSponsors();
       renderSponsorCard(pickSponsorForDisplay());
@@ -1840,8 +1841,3 @@ setupRampsAutoLoad();
   </script>
 </body>
 </html>
-
-
-
-
-
