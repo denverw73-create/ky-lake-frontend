@@ -535,12 +535,17 @@
             <h2 style="margin:0;">Map & GPS</h2>
             <div class="subtitle" id="map-status">GPS: idle</div>
           </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button id="gps-btn" class="pill-btn primary" type="button">Use GPS</button>
-            <button id="gps-stop-btn" class="pill-btn" type="button">Stop</button>
-            <button id="center-ky-btn" class="pill-btn" type="button">Center KY</button>
-          </div>
-        </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+  <button id="gps-btn" class="pill-btn primary" type="button">Use GPS</button>
+  <button id="gps-stop-btn" class="pill-btn" type="button">Stop</button>
+  <button id="center-ky-btn" class="pill-btn" type="button">Center KY</button>
+
+  <label class="boat-toggle" style="margin-left:6px;">
+    <input type="checkbox" id="ramps-toggle" checked />
+    <span>Boat ramps</span>
+  </label>
+</div>
+ </div>
 
         <div style="margin-top:10px;">
           <div id="map"></div>
@@ -740,6 +745,8 @@ let sponsorLayer = null;
 let rampsLayer = null;
 let rampsAbort = null;
 let rampsDebounceTimer = null;
+    let rampsEnabled = true;
+
 
     let selectedLake = null;
 
@@ -877,19 +884,56 @@ out center tags;
 }
 
 async function refreshRampsForCurrentView() {
+ async function refreshRampsForCurrentView() {
   if (!map) return;
+
+  if (!rampsEnabled) {
+    clearRampPins();
+    return;
+  }
 
   // Cancel any previous fetch
   if (rampsAbort) rampsAbort.abort();
   rampsAbort = new AbortController();
 
-  // Don’t spam the server on tiny zooms way out
-  // (Ramps explode in count at low zoom levels)
   const z = map.getZoom();
   if (z < 9) {
     clearRampPins();
     return;
   }
+
+  const bounds = map.getBounds();
+  const ramps = await fetchRampsInBounds(bounds, rampsAbort.signal);
+
+  clearRampPins();
+  rampsLayer = L.layerGroup().addTo(map);
+
+  const MAX_MARKERS = 300;
+  const list = ramps.slice(0, MAX_MARKERS);
+
+  list.forEach(r => { /* your marker code */ });
+}
+
+function setupRampsToggle() {
+  const cb = document.getElementById("ramps-toggle");
+  if (!cb) return;
+
+  cb.checked = true;
+  rampsEnabled = cb.checked;
+
+  cb.addEventListener("change", () => {
+    rampsEnabled = cb.checked;
+
+    // stop current fetch if turning off
+    if (!rampsEnabled && rampsAbort) rampsAbort.abort();
+
+    if (!rampsEnabled) {
+      clearRampPins();
+    } else {
+      refreshRampsForCurrentView().catch(() => {});
+    }
+  });
+}
 
   // Keep requests reasonable: use current map bounds
   const bounds = map.getBounds();
@@ -1892,6 +1936,7 @@ setupGpsButtons();
   </script>
 </body>
 </html>
+
 
 
 
