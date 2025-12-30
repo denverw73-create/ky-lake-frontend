@@ -733,7 +733,10 @@
     let userMarker = null;
     let accuracyCircle = null;
     let gpsWatchId = null;
-    let sponsorLayer = null;
+    
+let rampsLayer = null;
+let rampsAbort = null;
+let rampsDebounceTimer = null;
 
     let selectedLake = null;
 
@@ -796,6 +799,146 @@
     function loadCachedLakeData() {
       return loadCachedJSON(LAST_DATA_KEY);
     }
+function clearRampPins() {
+  if (rampsLayer) {
+    rampsLayer.remove();
+    rampsLayer = null;
+  }
+}
+
+async function fetchRampsInBounds(bounds, signal) {
+  // bounds = Leaflet LatLngBounds
+  const sw = bounds.getSouthWest();
+  const ne = bounds.getNorthEast();
+
+  // Overpass “bbox” format: (south,west,north,east)
+  const bbox = `${sw.lat},${sw.lng},${ne.lat},${ne.lng}`;
+
+  // Pull common ramp tags
+  const query = `
+[out:json][timeout:25];
+(
+  node["amenity"="boat_ramp"](${bbox});
+  way["amenity"="boat_ramp"](${bbox});
+  relation["amenity"="boat_ramp"](${bbox});
+
+  node["leisure"="slipway"](${bbox});
+  way["leisure"="slipway"](${bbox});
+  relation["leisure"="slipway"](${bbox});
+);
+out center tags;
+  `.trim();
+
+  const resp = await fetch("https://overpass-api.de/api/interpreter", {
+    method: "POST",
+    headers: { "Content-Type": "text/plain" },
+    body: query,
+    signal
+  });
+
+  if (!resp.ok) throw new Error("Overpass HTTP " + resp.status);
+  const data = await resp.json();
+
+  const ramps = (data.elements || [])
+    .map(el => {
+      const lat = el.lat ?? el.center?.lat;
+      const lon = el.lon ?? el.center?.lon;
+      if (!isFinite(lat) || !isFinite(lon)) return null;
+
+      const name =
+        el.tags?.name ||
+        el.tags?.operator ||
+        "Boat Ramp";
+
+      return {
+        name: String(name).trim(),
+        lat: Number(lat),
+        lon: Number(lon),
+      };
+    })
+    .filter(Boolean);
+
+  // Dedup by rounded coord
+  const seen = new Set();
+  const uniq = [];
+  for (const r of ramps) {
+    const k = `${r.lat.toFixed(5)},${r.lon.toFixed(5)}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    uniq.push(r);
+  }
+
+  // Sort stable
+  uniq.sort((a, b) => a.name.localeCompare(b.name));
+  return uniq;
+}
+
+async function refreshRampsForCurrentView() {
+  if (!map) return;
+
+  // Cancel any previous fetch
+  if (rampsAbort) rampsAbort.abort();
+  rampsAbort = new AbortController();
+
+  // Don’t spam the server on tiny zooms way out
+  // (Ramps explode in count at low zoom levels)
+  const z = map.getZoom();
+  if (z < 9) {
+    clearRampPins();
+    return;
+  }
+
+  // Keep requests reasonable: use current map bounds
+  const bounds = map.getBounds();
+
+  // Fetch + render
+  const ramps = await fetchRampsInBounds(bounds, rampsAbort.signal);
+
+  clearRampPins();
+  rampsLayer = L.layerGroup().addTo(map);
+
+  // Safety: if there are a TON of ramps, cap markers so the app stays snappy
+  const MAX_MARKERS = 300;
+  const list = ramps.slice(0, MAX_MARKERS);
+
+  list.forEach(r => {
+    const marker = L.marker([r.lat, r.lon]).addTo(rampsLayer);
+
+    marker.bindPopup(`
+      <div style="font-weight:1000; margin-bottom:4px;">${safeText(r.name)}</div>
+      <div style="font-size:12px; opacity:0.85;">
+        Lat: ${r.lat.toFixed(6)}<br/>
+        Lon: ${r.lon.toFixed(6)}
+      </div>
+      <div style="margin-top:8px;">
+        <a href="https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lon}" target="_blank" rel="noopener">
+          Open in Google Maps
+        </a>
+      </div>
+    `);
+
+    marker.bindTooltip(safeText(r.name), { direction: "top", offset: [0, -8] });
+  });
+}
+
+function setupAutoRampPins() {
+  if (!map) return;
+
+  const debounced = () => {
+    if (rampsDebounceTimer) clearTimeout(rampsDebounceTimer);
+    rampsDebounceTimer = setTimeout(() => {
+      refreshRampsForCurrentView().catch(err => {
+        if (err?.name === "AbortError") return;
+        console.warn("Ramp fetch failed:", err);
+      });
+    }, 700); // debounce delay (polite)
+  };
+
+  map.on("moveend zoomend", debounced);
+
+  // initial load
+  debounced();
+}
 
     // =========================
     // SPONSORS (card + map pins)
@@ -1730,8 +1873,10 @@
       setupDisclaimerModal();
       setupLakeModal();
 
-      setupMap();
-      setupGpsButtons();
+     setupMap();
+setupAutoRampPins();
+setupGpsButtons();
+
 
       await loadSponsors();
       renderSponsorCard(pickSponsorForDisplay());
@@ -1744,6 +1889,7 @@
   </script>
 </body>
 </html>
+
 
 
 
