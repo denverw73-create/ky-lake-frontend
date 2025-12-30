@@ -20,6 +20,99 @@
   <!-- Leaflet (Map) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+// KY Fish & Wildlife map service (boat access layers)
+const KDFWR_MAPSERVER = "https://kygisserver.ky.gov/arcgis/rest/services/WGS84WM_Services/Ky_Fish_Wildlife_WGS84WM/MapServer";
+
+// Layer IDs from the service:
+// 0 = Any Boat Access, 1 = Small Boat Access
+const RAMP_LAYERS = [0, 1];
+
+let rampsCluster = null;
+
+function ensureRampsLayer() {
+  if (!map) return;
+  if (!rampsCluster) {
+    rampsCluster = L.markerClusterGroup({ disableClusteringAtZoom: 14 });
+    map.addLayer(rampsCluster);
+  }
+}
+
+async function fetchRampsInBounds(layerId, bounds) {
+  // ArcGIS expects bbox in the service’s spatial ref (this MapServer is 3857) :contentReference[oaicite:1]{index=1}
+  // Leaflet bounds are lat/lng (4326), but ArcGIS will accept bbox in 4326 if we set inSR/outSR=4326.
+  const b = bounds;
+  const west = b.getWest(), south = b.getSouth(), east = b.getEast(), north = b.getNorth();
+
+  const url =
+    `${KDFWR_MAPSERVER}/${layerId}/query` +
+    `?where=1%3D1` +
+    `&geometry=${west},${south},${east},${north}` +
+    `&geometryType=esriGeometryEnvelope` +
+    `&inSR=4326` +
+    `&outSR=4326` +
+    `&outFields=*` +
+    `&returnGeometry=true` +
+    `&f=geojson`;
+
+  const resp = await fetch(url, { cache: "no-store" });
+  if (!resp.ok) throw new Error(`ramps layer ${layerId} http ${resp.status}`);
+  return await resp.json(); // GeoJSON FeatureCollection
+}
+
+function rampPopupHtml(props, lat, lon) {
+  const name = props?.Name || props?.NAME || props?.SiteName || props?.SITENAME || "Boat Access";
+  const notes = props?.Notes || props?.NOTES || props?.Type || props?.TYPE || "";
+  return `
+    <div style="font-weight:1000; margin-bottom:4px;">${name}</div>
+    <div style="opacity:.85;">${notes}</div>
+    <div style="margin-top:8px;">
+      <a target="_blank" rel="noopener"
+         href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}">
+        Directions
+      </a>
+    </div>
+  `;
+}
+
+async function loadRampsInView() {
+  if (!map) return;
+  ensureRampsLayer();
+
+  // Clear old ramps and reload only what’s visible
+  rampsCluster.clearLayers();
+
+  const bounds = map.getBounds();
+
+  for (const layerId of RAMP_LAYERS) {
+    const geojson = await fetchRampsInBounds(layerId, bounds);
+
+    L.geoJSON(geojson, {
+      pointToLayer: (feature, latlng) => L.marker(latlng),
+      onEachFeature: (feature, layer) => {
+        const lat = layer.getLatLng().lat;
+        const lon = layer.getLatLng().lng;
+        layer.bindPopup(rampPopupHtml(feature.properties, lat, lon));
+      }
+    }).eachLayer(l => rampsCluster.addLayer(l));
+  }
+}
+
+// Throttle reload on pan/zoom
+let rampsTimer = null;
+function setupRampsAutoLoad() {
+  if (!map) return;
+
+  loadRampsInView();
+
+  map.on("moveend", () => {
+    clearTimeout(rampsTimer);
+    rampsTimer = setTimeout(loadRampsInView, 350);
+  });
+}
 
   <style>
     :root {
@@ -937,6 +1030,7 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
     function setupMap() {
       const defaultLatLng = [37.8393, -84.27]; // KY center
       map = L.map("map", { zoomControl: true }).setView(defaultLatLng, 7);
+setupRampsAutoLoad();
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 18,
@@ -1746,6 +1840,7 @@ document.getElementById("lake-directions-btn").href = lakeDirectionsUrl(lakeObj)
   </script>
 </body>
 </html>
+
 
 
 
