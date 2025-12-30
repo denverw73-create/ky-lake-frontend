@@ -239,7 +239,8 @@
     }
     .dot.user { background: #22c55e; }
     .dot.sponsor { background: #f59e0b; }
-    .dot.ramp { background: #a855f7; }
+    .dot.ramp { background: #a855f7; } /* purple */
+
 
     .main-grid { display: flex; flex-direction: column; gap: 10px; }
 
@@ -533,12 +534,12 @@
 
         <div style="margin-top:10px;">
           <div id="map"></div>
-          <div class="map-legend">
-            <span><span class="dot user"></span>Your GPS</span>
-            <span><span class="dot sponsor"></span>Sponsors</span>
-            <span><span class="dot ramp"></span>Boat ramps (OSM)</span>
-          </div>
-        </div>
+       <div class="map-legend">
+  <span><span class="dot user"></span>Your GPS</span>
+  <span><span class="dot sponsor"></span>Sponsors</span>
+  <span><span class="dot ramp"></span>Boat ramps </span>
+</div>
+
 
         <div class="subtitle" style="margin-top:8px;">
           Tip: Location needs HTTPS + permission. We only use GPS to show your position.
@@ -895,7 +896,14 @@ out center tags;
       const list = ramps.slice(0, MAX_MARKERS);
 
       list.forEach(r => {
-        const marker = L.marker([r.lat, r.lon]).addTo(rampsLayer);
+        const marker = L.circleMarker([r.lat, r.lon], {
+  radius: 7,
+  weight: 2,
+  color: "#a855f7",
+  fillColor: "#a855f7",
+  fillOpacity: 0.95
+}).addTo(rampsLayer);
+
 
         marker.bindPopup(`
           <div style="font-weight:1000; margin-bottom:4px;">${safeText(r.name)}</div>
@@ -1856,3 +1864,4 @@ out center tags;
   </script>
 </body>
 </html>
+
