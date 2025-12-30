@@ -1,6 +1,6 @@
 {
-  "name": "KY Lake Levels",
-  "short_name": "KY Lakes",
+  "name": "Anchor Point KY",
+  "short_name": "Anchor Point KY",
   "description": "Live USACE lake levels, inflows, outflows, and boat-mode display for KY lakes.",
   "start_url": "/",
   "scope": "/",
