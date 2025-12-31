@@ -807,7 +807,11 @@
     }
 
     function cacheLakeData(data) {
-      cacheJSON(LAST_DATA_KEY, { timestamp: data.timestamp || nowIso(), lakes: data.lakes || [] });
+     const ts = new Date(data.timestamp);
+
+updatedLabel.textContent =
+  `Updated: ${ts.toLocaleDateString("en-US")}`;
+
     }
     function loadCachedLakeData() {
       return loadCachedJSON(LAST_DATA_KEY);
@@ -1916,6 +1920,7 @@ out center tags;
   </script>
 </body>
 </html>
+
 
 
 
