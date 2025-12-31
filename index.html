@@ -1760,7 +1760,8 @@ out center tags;
       }
 
       const ts = data.timestamp ? new Date(data.timestamp) : new Date();
-      updatedLabel.textContent = `Updated: ${ts.toLocaleString()}`;
+updatedLabel.textContent = `Updated: ${ts.toLocaleDateString("en-US")}`;
+
 
       if (fromCache) {
         statusLine.textContent = `Using cached data (${lakes.length} lakes) – offline`;
@@ -1916,6 +1917,7 @@ out center tags;
   </script>
 </body>
 </html>
+
 
 
 
