@@ -35,6 +35,22 @@
       --danger: #f97373;
       --success: #4ade80;
       --chip-bg: #111827;
+      .visit-badge{
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 99999;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 950;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.45);
+  opacity: 0.92;
+}
+
     }
 
     body {
@@ -459,6 +475,11 @@
 </head>
 
 <body>
+  <div id="visit-badge" class="visit-badge">Visits: —</div>
+  <div class="app-shell">
+
+
+
   <div class="app-shell">
     <header class="app-header">
       <div class="title-row">
@@ -1555,6 +1576,22 @@ out center tags;
         return { wid, url, rows: [], source: "failed" };
       }
     }
+async function updateVisitCounter() {
+  const el = document.getElementById("visit-badge");
+  if (!el) return;
+
+  try {
+    const resp = await fetch(`${BACKEND_URL}/visits`, { cache: "no-store" });
+    if (!resp.ok) throw new Error("visits http " + resp.status);
+    const data = await resp.json();
+
+    const n = Number(data.count ?? data.visits ?? 0);
+    el.textContent = `Visits: ${isFinite(n) ? n.toLocaleString() : "—"}`;
+  } catch (e) {
+    console.warn("Visit counter failed:", e);
+    el.textContent = "Visits: —";
+  }
+}
 
     function openLakeModal(lakeObj) {
       selectedLake = lakeObj;
@@ -1868,6 +1905,13 @@ updatedLabel.textContent = `Updated: ${ts.toLocaleDateString("en-US")}`;
         backdrop.style.display = "none";
       });
     }
+document.addEventListener("DOMContentLoaded", async () => {
+  ...
+  setupFishLimitsCard();
+  loadLakes();
+
+  updateVisitCounter(); // <-- ADD THIS
+});
 
     // =========================
     // LAKE MODAL WIRING
@@ -1917,6 +1961,7 @@ updatedLabel.textContent = `Updated: ${ts.toLocaleDateString("en-US")}`;
   </script>
 </body>
 </html>
+
 
 
 
