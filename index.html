@@ -1805,9 +1805,11 @@ out center tags;
         tbody.appendChild(tr);
       }
 
-      const ts = data.timestamp ? new Date(data.timestamp) : new Date();
-updatedLabel.textContent = `Updated: ${ts.toLocaleDateString("en-US")}`;
+      const ts = data.timestamp
+  ? new Date(data.timestamp + "T12:00:00")
+  : new Date();
 
+updatedLabel.textContent = `Updated: ${ts.toLocaleDateString("en-US")}`;
 
       if (fromCache) {
         statusLine.textContent = `Using cached data (${lakes.length} lakes) – offline`;
