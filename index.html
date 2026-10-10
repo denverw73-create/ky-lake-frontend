@@ -1311,7 +1311,9 @@ out center tags;
         metaEl.textContent = `Showing forecast for ${city}, ${state} (ZIP ${zip})`;
 
         const meteoResp = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,wind_speed_10m&temperature_unit=fahrenheit&windspeed_unit=mph&forecast_days=1`
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&
+hourly=temperature_2m,precipitation,wind_speed_10m,weather_code
+  &temperature_unit=fahrenheit&windspeed_unit=mph&forecast_days=1`
         );
         const meteo = await meteoResp.json();
 
